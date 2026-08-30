@@ -1,0 +1,27 @@
+OS: Ubuntu 22.04.5 LTS
+Architecture: x86_64
+CPU threads: 8
+Memory:
+               total        used        free      shared  buff/cache   available
+内存：       15Gi       2,9Gi       7,4Gi       819Mi       5,2Gi        11Gi
+交换：       15Gi       1,9Gi        14Gi
+
+Swap:
+NAME      TYPE SIZE USED PRIO
+/swapfile file  16G 1,9G   -2
+
+Tools:
+nix (Nix) 2.35.1
+git version 2.54.0
+gcc (GCC) 15.2.0
+Verilator 5.048 2026-04-26 rev v5.048
+
+Pinned source versions:
+# Pinned baseline revisions for the CIE 2026 VDOT project.
+# This file is sourced by scripts/apply-patches.sh.
+XS_ENV_BASE="bbb8a79e4940e3ad88ddcdd5ccb85c0f170d0e6e"
+XIANGSHAN_BASE="16ae9ddcda54fc9a2fddffad73174cf793ac7814"
+YUNSUAN_BASE="cadd3c2f43096e253d61296b33ac697be8354e29"
+ROCKET_CHIP_BASE="bea0af5d855a871699b907c1988961141bbf28e7"
+NEMU_BASE="53bcb5686f8fd05248ae98546b7dc04bdca1bbb0"
+NEXUS_AM_BASE="086a238062fdfb3281b745a537b361983d0154b5"

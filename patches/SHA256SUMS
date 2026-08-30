@@ -1,0 +1,5 @@
+a7f3e53ed82e0640c6926ffa438f477addb1935ca0978c02b509cfb277f04a1a  patches/01-yunsuan-vdot.patch
+233bfb985be0088c13b15b06dcec6dd4b4f1aacab4463230998b0ebe6f9425b7  patches/02-rocket-chip-vdot.patch
+6bdff124eff3513be12bc0f3b8dcf3e0609ebce7d36762755e49f2a7707f28a7  patches/03-xiangshan-vdot.patch
+b001091892e91c64abdf79bc32b9e70d024048f602f0c408eb385b9fa01ca190  patches/04-nemu-vdot.patch
+de3541ec3bcce9e8d72e4f04c2d4bb732bec97740756ef8988726a16d739fe92  patches/05-nexus-am-tests.patch

@@ -1,0 +1,77 @@
+diff --git a/src/isa/riscv64/instr/rvv/vcompute.h b/src/isa/riscv64/instr/rvv/vcompute.h
+index 65fedb75..46a20387 100644
+--- a/src/isa/riscv64/instr/rvv/vcompute.h
++++ b/src/isa/riscv64/instr/rvv/vcompute.h
+@@ -266,7 +266,71 @@ def_EHelper(vdotu) {
+ }
+
+ def_EHelper(vdot) {
+-  longjmp_exception(EX_II);
++  /*
++   * Custom signed int8 dot product:
++   *   result = sum(vs2[i] * vs1[i]), i = 0..7
++   *   vd[31:0]   = signed 32-bit result
++   *   vd[127:32] = 0
++   *
++   * The first implementation supports only:
++   *   OPIVV, vm = 1, SEW = 8, LMUL = 1.
++   */
++  if (s->src_vmode != SRC_VV ||
++      s->vm != 1 ||
++      vtype->vsew != 0 ||
++      vtype->vlmul != 0) {
++    longjmp_exception(EX_II);
++  }
++
++  /*
++   * Match the RTL no-update behavior when vstart >= vl.
++   */
++  if (vstart->val < vl->val) {
++    int32_t result = 0;
++
++    /*
++     * Read all source elements before writing vd, so register
++     * overlap between vd and either source remains safe.
++     */
++    for (int idx = 0; idx < 8; idx++) {
++      rtlreg_t src2_element = 0;
++      rtlreg_t src1_element = 0;
++
++      get_vreg(
++          id_src2->reg, idx, &src2_element,
++          0, 0, 1, 1);
++
++      get_vreg(
++          id_src1->reg, idx, &src1_element,
++          0, 0, 1, 1);
++
++      result +=
++          (int32_t)(int64_t)src2_element *
++          (int32_t)(int64_t)src1_element;
++    }
++
++    uint32_t raw_result = (uint32_t)result;
++
++    /*
++     * Write the complete 128-bit destination:
++     * bytes 0..3 contain the result, bytes 4..15 are zero.
++     */
++    for (int idx = 0; idx < 16; idx++) {
++      rtlreg_t result_byte = 0;
++
++      if (idx < 4) {
++        result_byte = (raw_result >> (8 * idx)) & 0xff;
++      }
++
++      set_vreg(
++          id_dest->reg, idx, result_byte,
++          0, 0, 1);
++    }
++  }
++
++  rtl_li(s, s0, 0);
++  vcsr_write(IDXVSTART, s0);
++  vp_set_dirty();
+ }
+
+ def_EHelper(vwsmaccu) {

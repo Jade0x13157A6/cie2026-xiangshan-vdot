@@ -1,0 +1,87 @@
+diff --git a/src/main/scala/xiangshan/backend/decode/VecDecoder.scala b/src/main/scala/xiangshan/backend/decode/VecDecoder.scala
+index 376419107..e9aba95df 100644
+--- a/src/main/scala/xiangshan/backend/decode/VecDecoder.scala
++++ b/src/main/scala/xiangshan/backend/decode/VecDecoder.scala
+@@ -187,6 +187,7 @@ case class VST(src2: BitPat, fuOp: BitPat, strided: Boolean = false, indexed: Bo
+ object VecDecoder extends DecodeConstants {
+   val opivv: Array[(BitPat, XSDecodeBase)] = Array(
+     VADD_VV         -> OPIVV(FuType.vialuF, VialuFixType.vadd_vv, T, F, F),
++    VDOT_VV         -> OPIVV(FuType.vialuF, VialuFixType.vdot_vv, T, F, F),
+     VSUB_VV         -> OPIVV(FuType.vialuF, VialuFixType.vsub_vv, T, F, F),
+
+     VMINU_VV        -> OPIVV(FuType.vialuF, VialuFixType.vminu_vv, T, F, F),
+diff --git a/src/main/scala/xiangshan/backend/fu/wrapper/VIAluFix.scala b/src/main/scala/xiangshan/backend/fu/wrapper/VIAluFix.scala
+index 75dd676a3..1852aa513 100644
+--- a/src/main/scala/xiangshan/backend/fu/wrapper/VIAluFix.scala
++++ b/src/main/scala/xiangshan/backend/fu/wrapper/VIAluFix.scala
+@@ -193,6 +193,40 @@ class VIAluFix(cfg: FuConfig)(implicit p: Parameters) extends VecPipedFuncUnit(c
+   private val eewVd = SewOH(vdType(1, 0))
+   private val isVwsll = opcode.isVwsll
+
++  /*
++   * vdot.vv:
++   *   vd[31:0] = sum_{i=0}^{7} signed(vs1[i]) * signed(vs2[i])
++   *   vd[127:32] = 0
++   *
++   * Eight signed int8 products are reduced with a balanced adder tree.
++   */
++  private val isVdot = fuOpType === VialuFixType.vdot_vv
++
++  private val vdotProducts = Seq.tabulate(8) { i =>
++    vs1(8 * i + 7, 8 * i).asSInt *
++      vs2(8 * i + 7, 8 * i).asSInt
++  }
++
++  private val vdotSumLevel1 = Seq.tabulate(4) { i =>
++    vdotProducts(2 * i) +& vdotProducts(2 * i + 1)
++  }
++
++  private val vdotSumLevel2 = Seq.tabulate(2) { i =>
++    vdotSumLevel1(2 * i) +& vdotSumLevel1(2 * i + 1)
++  }
++
++  private val vdotSum = vdotSumLevel2(0) +& vdotSumLevel2(1)
++
++  private val vdotSum32 = Wire(SInt(32.W))
++  vdotSum32 := vdotSum
++
++  private val vdotResult =
++    Cat(0.U((dataWidth - 32).W), vdotSum32.asUInt)
++
++  // VIAluFix is configured as a one-cycle pipelined functional unit.
++  private val outIsVdot = RegEnable(isVdot, io.in.valid)
++  private val outVdotResult = RegEnable(vdotResult, io.in.valid)
++
+   // Extension instructions
+   private val vf2 = isVextF2
+   private val vf4 = isVextF4
+@@ -355,9 +389,26 @@ class VIAluFix(cfg: FuConfig)(implicit p: Parameters) extends VecPipedFuncUnit(c
+   mgtu.io.in.vd := Mux(dstMask && !outVecCtrl.isOpMask, mgu.io.out.vd, outVd)
+   mgtu.io.in.vl := outVl
+
+-  io.out.bits.res.data := Mux(outVstartGeVl, outOldVd, Mux(dstMask, mgtu.io.out.vd, mgu.io.out.vd))
+-  io.out.bits.res.vxsat.get := Mux(outVstartGeVl, false.B, (outVxsatReal & mgu.io.out.active).orR)
+-  io.out.bits.ctrl.exceptionVec.get(ExceptionNO.illegalInstr) := mgu.io.out.illegal && !outVstartGeVl
++  private val normalResult =
++    Mux(dstMask, mgtu.io.out.vd, mgu.io.out.vd)
++
++  private val vdotIllegal =
++    outIsVdot && (
++      outVecCtrl.vsew =/= VSew.e8 ||
++      outVecCtrl.vlmul =/= 0.U
++    )
++
++  io.out.bits.res.data :=
++    Mux(outVstartGeVl, outOldVd,
++      Mux(outIsVdot, outVdotResult, normalResult))
++
++  io.out.bits.res.vxsat.get :=
++    Mux(outIsVdot, false.B,
++      Mux(outVstartGeVl, false.B,
++        (outVxsatReal & mgu.io.out.active).orR))
++
++  io.out.bits.ctrl.exceptionVec.get(ExceptionNO.illegalInstr) :=
++    (mgu.io.out.illegal || vdotIllegal) && !outVstartGeVl
+
+   // util function
+   def splitMask(maskIn: UInt, sew: SewOH): Vec[UInt] = {

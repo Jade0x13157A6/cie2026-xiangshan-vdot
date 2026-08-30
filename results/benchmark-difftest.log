@@ -1,0 +1,22 @@
+emu compiled at Jan  1 1980, 00:00:00
+Using simulated 32768B flash
+Using simulated 8386560MB RAM
+The image is <WORKSPACE>/xs-env/nexus-am/apps/vdot-bench-jade/build/vdot-bench-jade-riscv64-xs.bin
+The reference model is <WORKSPACE>/xs-env/NEMU/build/riscv64-nemu-interpreter-so
+The first instruction of core 0 has commited. Difftest enabled.
+correctness: scalar=120 vdot=120 expected=120
+round 0: scalar=24862 custom=8260 cycles
+round 1: scalar=25066 custom=8673 cycles
+round 2: scalar=25441 custom=8251 cycles
+round 3: scalar=25011 custom=8672 cycles
+round 4: scalar=25502 custom=8203 cycles
+=== best result over 5 rounds ===
+scalar: total=24862 cycles, per_dot=24.862 cycles
+vdot  : total=8203 cycles, per_dot=8.203 cycles
+vdot speedup: 3.030x
+vdot benchmark PASS
+Core 0: [32mHIT GOOD TRAP at pc = 0x0
+[0m[35mCore-0 instrCnt = 706.856, cycleCnt = 229.877, IPC = 3,074931
+[0m[34mSeed=0 Guest cycle spent: 229.897 (this will be different from cycleCnt if emu loads a snapshot)
+[0m[34mHost time spent: 370.588ms
+[0m

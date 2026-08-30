@@ -1,0 +1,56 @@
+=== scalar_dot_once ===
+00000000800001c8 <scalar_dot_once.constprop.0>:
+    800001c8:	1141                	addi	sp,sp,-16
+    800001ca:	e022                	sd	s0,0(sp)
+    800001cc:	e406                	sd	ra,8(sp)
+    800001ce:	0800                	addi	s0,sp,16
+    800001d0:	00002717          	auipc	a4,0x2
+    800001d4:	96070713          	addi	a4,a4,-1696 # 80001b30 <src_a>
+    800001d8:	00002617          	auipc	a2,0x2
+    800001dc:	94860613          	addi	a2,a2,-1720 # 80001b20 <src_b>
+    800001e0:	00002597          	auipc	a1,0x2
+    800001e4:	95858593          	addi	a1,a1,-1704 # 80001b38 <benchmark_sink>
+    800001e8:	4501                	li	a0,0
+    800001ea:	00074783          	lbu	a5,0(a4)
+    800001ee:	00064683          	lbu	a3,0(a2)
+    800001f2:	0705                	addi	a4,a4,1
+    800001f4:	0187979b          	slliw	a5,a5,0x18
+    800001f8:	0186969b          	slliw	a3,a3,0x18
+    800001fc:	4187d79b          	sraiw	a5,a5,0x18
+    80000200:	4186d69b          	sraiw	a3,a3,0x18
+    80000204:	02d787bb          	mulw	a5,a5,a3
+    80000208:	0605                	addi	a2,a2,1
+    8000020a:	9d3d                	addw	a0,a0,a5
+    8000020c:	fcb71fe3          	bne	a4,a1,800001ea <scalar_dot_once.constprop.0+0x22>
+    80000210:	60a2                	ld	ra,8(sp)
+    80000212:	6402                	ld	s0,0(sp)
+    80000214:	0141                	addi	sp,sp,16
+    80000216:	4581                	li	a1,0
+    80000218:	4601                	li	a2,0
+    8000021a:	4681                	li	a3,0
+    8000021c:	4701                	li	a4,0
+    8000021e:	4781                	li	a5,0
+    80000220:	8082                	ret
+
+
+=== custom_dot_once ===
+0000000080000190 <custom_dot_once.constprop.0>:
+    80000190:	1141                	addi	sp,sp,-16
+    80000192:	e022                	sd	s0,0(sp)
+    80000194:	e406                	sd	ra,8(sp)
+    80000196:	0800                	addi	s0,sp,16
+    80000198:	00002517          	auipc	a0,0x2
+    8000019c:	99850513          	addi	a0,a0,-1640 # 80001b30 <src_a>
+    800001a0:	00002797          	auipc	a5,0x2
+    800001a4:	98078793          	addi	a5,a5,-1664 # 80001b20 <src_b>
+    800001a8:	cc047057          	vsetivli	zero,8,e8,m1,ta,ma
+    800001ac:	02050087          	vle8.v	v1,(a0)
+    800001b0:	02078107          	vle8.v	v2,(a5)
+    800001b4:	e61101d7          	.word	0xe61101d7
+    800001b8:	42302557          	vmv.x.s	a0,v3
+    800001bc:	60a2                	ld	ra,8(sp)
+    800001be:	6402                	ld	s0,0(sp)
+    800001c0:	2501                	sext.w	a0,a0
+    800001c2:	0141                	addi	sp,sp,16
+    800001c4:	4781                	li	a5,0
+    800001c6:	8082                	ret

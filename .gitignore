@@ -1,0 +1,10 @@
+# Large waveform files
+*.fst
+*.vcd
+
+# Large reproducible build logs
+results/build-*.log
+
+# Editor temporary files
+*~
+*.swp

@@ -1,0 +1,13 @@
+CIE 2026 XiangShan VDOT test summary
+
+Validation:
+vdot.vv lane routing PASS: 8 cases
+vdot.vv deterministic random PASS: 64 cases seed=0x013157a6
+vdot.vv test PASS: 76 total cases
+
+Performance:
+correctness: scalar=120 vdot=120 expected=120
+scalar: total=24862 cycles, per_dot=24.862 cycles
+vdot  : total=8203 cycles, per_dot=8.203 cycles
+vdot speedup: 3.030x
+vdot benchmark PASS

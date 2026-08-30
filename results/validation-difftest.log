@@ -1,0 +1,18 @@
+emu compiled at Jan  1 1980, 00:00:00
+Using simulated 32768B flash
+Using simulated 8386560MB RAM
+The image is <WORKSPACE>/xs-env/nexus-am/apps/vdot-jade/build/vdot-jade-riscv64-xs.bin
+The reference model is <WORKSPACE>/xs-env/NEMU/build/riscv64-nemu-interpreter-so
+The first instruction of core 0 has commited. Difftest enabled.
+vdot.vv positive: actual=120 expected=120 upper_zero=yes cycles=6
+vdot.vv negative: actual=-36 expected=-36 upper_zero=yes cycles=6
+vdot.vv maximum : actual=131072 expected=131072 upper_zero=yes cycles=124
+vdot.vv minimum : actual=-130048 expected=-130048 upper_zero=yes cycles=74
+vdot.vv lane routing PASS: 8 cases
+vdot.vv deterministic random PASS: 64 cases seed=0x013157a6
+vdot.vv test PASS: 76 total cases
+Core 0: [32mHIT GOOD TRAP at pc = 0x0
+[0m[35mCore-0 instrCnt = 57.689, cycleCnt = 74.294, IPC = 0,776496
+[0m[34mSeed=0 Guest cycle spent: 74.314 (this will be different from cycleCnt if emu loads a snapshot)
+[0m[34mHost time spent: 122.355ms
+[0m
