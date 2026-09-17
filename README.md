@@ -86,8 +86,7 @@ results/    差分测试与性能测试结果
 - https://github.com/OpenXiangShan/NEMU
 - https://github.com/OpenXiangShan/nexus-am
 
---------------------English Version Below-----------------------
-# CIE 2026 XiangShan VDOT
+# CIE 2026 XiangShan VDOT [English Version]
 
 A custom signed INT8 vector dot-product instruction for XiangShan Kunminghu V2.
 
