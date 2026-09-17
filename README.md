@@ -85,3 +85,73 @@ results/    差分测试与性能测试结果
 - https://github.com/OpenXiangShan/XiangShan
 - https://github.com/OpenXiangShan/NEMU
 - https://github.com/OpenXiangShan/nexus-am
+
+--------------------English Version Below-----------------------
+# CIE 2026 XiangShan VDOT
+
+A custom signed INT8 vector dot-product instruction for XiangShan Kunminghu V2.
+
+## Implementation
+
+- Added `vdot.vv` instruction decoding to XiangShan
+- Implemented eight parallel signed INT8 multipliers
+- Used a balanced adder tree for accumulation
+- Added 32-bit result write-back
+- Extended the NEMU reference model
+- Added RTL–NEMU differential verification
+
+## Instruction
+
+```text
+vdot.vv vd, vs2, vs1
+
+vd[31:0] = sum(vs2[i] * vs1[i]), i = 0..7
+vd[127:32] = 0
+```
+
+Current configuration:
+
+- `SEW = 8`
+- `LMUL = 1`
+- Eight signed INT8 elements
+- Signed INT32 result
+- Masking is not supported
+
+## Verification Results
+
+| Test | Result |
+|---|---:|
+| Directed boundary tests | 4/4 passed |
+| Lane-connectivity tests | 8/8 passed |
+| Fixed-seed randomized tests | 64/64 passed |
+| RTL–NEMU differential test | Passed |
+| Total tests | 76 |
+
+## Performance Results
+
+| Implementation | Cycles per dot product |
+|---|---:|
+| Scalar C | 24.862 |
+| Custom VDOT | 8.203 |
+
+**Speedup: 3.03×**
+
+## Repository Structure
+
+```text
+patches/    Source patches for the upstream repositories
+scripts/    Patch, build, and test scripts
+results/    Verification and performance results
+```
+
+## Usage
+
+Place this repository and `xs-env` in the same parent directory:
+
+```bash
+./cie2026-xiangshan-vdot/scripts/apply-patches.sh "$(pwd)/xs-env"
+./cie2026-xiangshan-vdot/scripts/build.sh "$(pwd)/xs-env"
+./cie2026-xiangshan-vdot/scripts/test.sh "$(pwd)/xs-env"
+```
+
+The build commands must be executed in the `xs-env` Nix development environment.
