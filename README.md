@@ -63,6 +63,10 @@ vdot.vv vd, vs2, vs1
 
 性能测试包含向量配置、加载、计算、结果提取及循环开销；每轮运行 1,000 次点积，共测试 5 轮并取最佳周期数。**相较标准 RVV，Hybrid VDOT 点积内核加速 1.480×，周期数减少约 32.5%。** 该结果不应表述为完整 LLM 推理加速。
 
+## 源代码快速浏览
+
+评委可直接查看 [`source/xiangshan/`](source/xiangshan/src/main/scala/xiangshan/backend/fu/wrapper/VIAluFix.scala) 中的最终 Hybrid CSA 硬件实现，以及 [`source/`](source/README.md) 内的其余 Scala/Chisel、NEMU C 参考模型及测试源文件。该目录是根据固定上游版本和正式补丁还原的可阅读源码镜像；实际复现仍以 `patches/` 和 `scripts/` 为准。
+
 ## 仓库结构
 
 | 路径 | 内容 |
