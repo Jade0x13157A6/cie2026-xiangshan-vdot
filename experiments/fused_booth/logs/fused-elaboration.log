@@ -1,0 +1,28 @@
+=== Welcome to XiangShan devshell! ===
+Version info:
+- Verilator 5.048 2026-04-26 rev v5.048
+- GSIM 70f2ab1dc9efd024bc4d5220e5714262dede90fa
+- Mill Build Tool version 0.12.17
+- gcc (GCC) 15.2.0
+- riscv64-unknown-linux-gnu-gcc (GCC) 15.2.0
+- clang version 21.1.8
+- openjdk version "21.0.12" 2026-07-21
+You can press Ctrl + D to exit devshell.
+SET XS_PROJECT_ROOT: /home/jade/work/xiangshan-vdot/xs-env
+SET NOOP_HOME (XiangShan RTL Home): /home/jade/work/xiangshan-vdot/xs-env/XiangShan
+SET NEMU_HOME: /home/jade/work/xiangshan-vdot/xs-env/NEMU
+SET AM_HOME: /home/jade/work/xiangshan-vdot/xs-env/nexus-am
+SET DRAMSIM3_HOME: /home/jade/work/xiangshan-vdot/xs-env/DRAMsim3
+Mill version 0.12.17 is different than configured for this directory!
+Configured version is 0.12.3 (/home/jade/work/xiangshan-vdot/xs-env/XiangShan/.mill-version)
+============================== xiangshan.runMain top.VdotCsaMain ==============================
+[658/664] xiangshan.compile
+[658] [info] compiling 1 Scala source to /home/jade/work/xiangshan-vdot/xs-env/XiangShan/out/xiangshan/compile.dest/classes ...
+[658] [info] done compiling
+[664/664] xiangshan.runMain
+[664] numBytes: 16, byteWidth: 4
+[664] elemIdxWidth: 8
+[664] [warn] home/jade/work/xiangshan-vdot/xs-env/XiangShan/src/main/scala/xiangshan/backend/fu/wrapper/VIAluFix.scala 301:47: [W004] Dynamic index with width 7 is too wide for Vec of size 8 (expected index width 3).
+[664] [warn] home/jade/work/xiangshan-vdot/xs-env/XiangShan/src/main/scala/xiangshan/backend/fu/wrapper/VIAluFix.scala 303:79: [W004] Dynamic index with width 7 is too wide for Vec of size 8 (expected index width 3).
+[664] [warn] There were 2 warning(s) during hardware elaboration.
+[664/664] ========================= xiangshan.runMain top.VdotCsaMain ======================== 27s

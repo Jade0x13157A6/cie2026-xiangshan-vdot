@@ -65,6 +65,10 @@ vdot.vv vd, vs2, vs1
 
 评委可直接查看 [`source/xiangshan/`](source/xiangshan/src/main/scala/xiangshan/backend/fu/wrapper/VIAluFix.scala) 中的最终 Hybrid CSA 硬件实现，以及 [`source/`](source/README.md) 内的其余 Scala/Chisel、NEMU C 参考模型及测试源文件。该目录是根据固定上游版本和正式补丁还原的可阅读源码镜像；实际复现仍以 `patches/` 和 `scripts/` 为准。
 
+## 微架构实验原始材料
+
+第五种候选结构 Fused Booth + CSA 的生成脚本、Chisel 源码、独立 RTL 测试日志及 Yosys 综合记录见 [`experiments/fused_booth/`](experiments/fused_booth/README.md)。该目录用于核对微架构探索过程；正式复现与整机验证仍使用最终 Hybrid CSA 补丁。
+
 ## 仓库结构
 
 | 路径 | 内容 |
