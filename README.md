@@ -1,7 +1,5 @@
 # 2026 CIE 全国 RISC-V 高水平创新及应用大赛——香山昆明湖 V2 自定义 VDOT 指令
 
-[**中文**](README.md) · [English](README_EN.md)
-
 ## 项目概述
 
 本项目面向边缘 AI 中的 INT8 点积计算，在香山（XiangShan）昆明湖 V2 处理器的向量整数执行单元中实现自定义 `vdot.vv` 指令，并完成指令译码、硬件执行、NEMU 参考模型、差分验证及性能评估。在基础实现之上，对五种乘积归约网络进行同条件综合比较，最终选择 **Hybrid Carry-Save Adder（CSA）** 结构。
