@@ -20,6 +20,10 @@ Implementation of an eight-lane signed INT8 dot-product instruction, `vdot.vv`, 
 
 Timing measures a complete dot-product kernel (vector configuration, loads, arithmetic, extraction and loop overhead), **not** single-instruction latency or end-to-end LLM inference. See [detailed results](docs/RESULTS.md) and [hardware design](docs/DESIGN.md).
 
+## Final Hybrid microarchitecture
+
+The final implementation uses a Hybrid CSA reduction network for eight signed INT8 products. Real generated-RTL testing passed **100,005/100,005** cases. After a fresh full-core RTL generation and Verilator build, RTL–NEMU Difftest passed **76/76** cases. Yosys reported **47,672** generic cells for the entire `VIAluFix` module versus **48,072** for the Balanced Tree design (−0.83%), with the measured VDOT topological depth unchanged at **47**. The final Standard RVV-to-Hybrid kernel speedup remains **1.480×**. These counts are not ASIC PPA measurements. See [final hardware results](docs/RESULTS.md#6-final-hybrid-architecture-and-verification).
+
 ## Repository layout
 
 - `patches/` — source changes for Yunsuan, rocket-chip, XiangShan, NEMU, nexus-am.

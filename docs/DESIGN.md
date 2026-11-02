@@ -71,30 +71,32 @@ VialuFixType.vdot_vv
 VIAluFix
 ```
 
-## 5. 硬件数据通路
+## 5. 硬件数据通路（最终 Hybrid CSA）
 
-硬件首先并行计算 8 个 signed INT8 乘积，然后使用平衡加法树求和：
+最终实现仍然计算低 8 个 signed INT8 元素的点积，不修改指令编码或写回语义。
 
-```text
-8 个乘积
-    ↓
-4 个一级部分和
-    ↓
-2 个二级部分和
-    ↓
-1 个最终结果
-```
-
-平衡加法树只有 3 级加法深度，而顺序累加需要 7 级。
-
-理论结果范围：
+每个 signed INT8 乘积独立生成后，先符号扩展至 19 位，再拆成两组（每组 4 个乘积）。每组利用两级 3:2 carry-save compressor 压缩为两个操作数，经普通加法器得到组内和；最后两个组内和相加，符号扩展为低 32 位结果，目标寄存器高 96 位清零。
 
 ```text
-最大值 = 8 × (-128 × -128) = 131072
-最小值 = 8 × (-128 × 127)  = -130048
+8 signed INT8 products
+          |
+    +-----+-----+
+    |           |
+  4 products  4 products
+    |           |
+  CSA 3:2    CSA 3:2
+    |           |
+  CSA 3:2    CSA 3:2
+    |           |
+  final add  final add
+    +-----+-----+
+          |
+      final add
+          |
+    32-bit signed result
 ```
 
-因此 32 位有符号结果足够容纳所有可能值。
+19 位中间结果足以覆盖 8 组 signed INT8 乘积的全部可能和。`VIAluFix` 的原有流水线接口、VDOT 译码和 NEMU 参考模型均保持不变。该选择来自对 Balanced Tree、CSA、MAC、Hybrid 和 Fused Booth + CSA 五种实现的同条件 Yosys 综合对比。测量见 `docs/RESULTS.md` 第 6 节。
 
 ## 6. 流水线与写回
 

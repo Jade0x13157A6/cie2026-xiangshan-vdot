@@ -28,7 +28,7 @@ The output matches elementwise addition of `[1,2,3,4,5,6,7,8]` and `[8,7,6,5,4,3
 
 ## 3. Stage 2 — Custom VDOT verification
 
-The custom `vdot.vv` uses 8 signed INT8 products and a balanced reduction tree to return a signed 32-bit dot product. RTL–NEMU differential testing passed **76/76** cases: 4 directed cases (positive, negative, maximum, minimum), 8 lane-routing cases, and 64 fixed-seed randomized cases (`0x013157a6`). See `results/validation-difftest.log`.
+The final custom `vdot.vv` uses 8 signed INT8 products and a Hybrid CSA reduction network to return a signed 32-bit dot product. RTL–NEMU differential testing passed **76/76** cases: 4 directed cases (positive, negative, maximum, minimum), 8 lane-routing cases, and 64 fixed-seed randomized cases (`0x013157a6`). See `results/validation-difftest.log`.
 
 ## 4. Stage 3 — Standard RVV baseline and comparison
 
@@ -59,3 +59,29 @@ Benchmark settings: 1000 dot products per timing round, 5 rounds, 32 warm-up cal
 - No full LLM inference performance claim.
 - No ASIC PPA claim. Preliminary generic Yosys cells for the VDOT-equipped `VIAluFix` are not a baseline-versus-modified area delta.
 - Simulation waveforms and testcase pass do not replace a comprehensive microarchitectural timing signoff.
+
+## 6. Final Hybrid architecture and verification
+
+Five reduction architectures were generated from the XiangShan `VIAluFix` Chisel implementation and evaluated under the same technology-independent Yosys flow (`read_slang`, `synth -flatten`, `stat`, `ltp -noff`). The cell count refers to the **entire `VIAluFix` module**; it is neither the VDOT-only area nor ASIC physical area. The VDOT logic depth is a **topological gate-level count**, not a measured propagation delay.
+
+| Architecture | Generic cells | Change vs Balanced Tree | VDOT logic depth | Standalone RTL test |
+|---|---:|---:|---:|---|
+| Balanced Tree | 48,072 | baseline | 47 | Previous baseline verification |
+| CSA | 47,336 | −1.53% | 52 | 100,005 PASS |
+| MAC expression | 48,179 | +0.22% | 47 | Not run |
+| **Hybrid CSA** | **47,672** | **−0.83%** | **47** | **100,005 PASS** |
+| Fused Booth + CSA | 47,786 | −0.59% | 56 | 100,005 PASS |
+
+The selected Hybrid version uses two independent four-product groups; each is compressed through two 3:2 CSA stages and then added. The two group results feed a final adder. The ISA semantics and one-cycle pipelined unit interface are unchanged.
+
+**Final Hybrid validation.** The full-core RTL was regenerated and the Verilator simulator rebuilt with the Hybrid implementation. RTL–NEMU differential testing passed all **76/76** VDOT cases and terminated with `HIT GOOD TRAP`. The standalone generated-RTL testbench passed **100,005** cases. See `results/hybrid/validation-difftest.log`.
+
+**Final Hybrid benchmark.** Running the rebuilt Hybrid full-core simulator with NEMU Difftest enabled produced the same best-of-five benchmark cycle counts as the earlier design:
+
+| Implementation | Total cycles / 1000 dots | Cycles / dot |
+|---|---:|---:|
+| Scalar C | 24,846 | 24.846 |
+| Standard RVV | 13,349 | 13.349 |
+| **Hybrid VDOT** | **9,015** | **9.015** |
+
+The Standard RVV-to-Hybrid VDOT kernel speedup remains **1.480×**; the Scalar C-to-Hybrid VDOT kernel speedup is **2.756×**. These are dot-product kernel cycle measurements, not an isolated hardware clock-period improvement. See `results/hybrid/benchmark-rvv-difftest.log`.
