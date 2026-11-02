@@ -16,9 +16,9 @@ vdot.vv vd, vs2, vs1
 
 一次指令读取两个向量源操作数的低 8 个有符号 INT8 元素，计算：
 
-\[
+```math
 \mathrm{VDOT} = \sum_{i=0}^{7} \mathrm{int8}(vs2_i)\times\mathrm{int8}(vs1_i)
-\]
+```
 
 计算结果写入目标向量寄存器低 32 位，目标寄存器高 96 位清零。当前实现支持 `SEW=e8`、`LMUL=m1`、`vl=8`、`vstart=0` 和不使用掩码（`vm=1`）的情况。
 
