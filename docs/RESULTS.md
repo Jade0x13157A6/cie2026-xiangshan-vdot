@@ -1,133 +1,61 @@
-# VDOT 验证与性能结果
+# Verification and Performance Results
 
-## 1. 测试平台
+## 1. Platform
 
-| 项目 | 配置 |
+XiangShan Kunminghu V2 (`KunminghuV2Config`), Verilator 5.048, modified NEMU reference model, RV64GCV application workloads. RTL and NEMU run under differential testing.
+
+## 2. Stage 1 — Vector addition waveform
+
+The dedicated `vadd.vv v3, v1, v2` workload uses instruction encoding `0x021101d7` at PC `0x80000168`. The test confirms eight active INT8 lanes: `vadd.vv PASS: 8 lanes`; RTL–NEMU simulation terminates with `HIT GOOD TRAP`.
+
+The waveform was captured with `--dump-wave-full` in `results/waveforms/vadd-full.fst`; the regular `--dump-wave` mode sampled only one clock phase and was not suitable for clock-edge analysis.
+
+![VADD execution-unit waveform](../results/waveforms/vadd_execution.png)
+
+Observed in `backend/inner_vfExuBlock/exus_2/VialuFix`:
+
+| Signal | Observation |
 |---|---|
-| 主机系统 | Ubuntu 22.04 x86-64 |
-| CPU 线程 | 8 |
-| 内存 | 约 16 GiB |
-| Swap | 16 GiB |
-| 处理器配置 | KunminghuV2Config |
-| RTL 仿真 | Verilator 5.048 |
-| 参考模型 | NEMU RV64 XiangShan |
-| 数据类型 | signed INT8 × signed INT8 → INT32 |
+| `io_in_valid` | asserted near trace timestamp 8970 ps |
+| `io_in_bits_ctrl_fuOpType` | `0x040` |
+| `io_in_bits_ctrl_vpu_vsew` | `0x00` (SEW=8) |
+| `io_in_bits_data_src_0`, `src_1` | contain the two eight-element input sequences |
+| `io_out_valid` | asserted near trace timestamp 8972 ps |
+| `io_out_bits_res_data` | low 64 bits `0x0909090909090909` |
+| `io_out_bits_ctrl_vecWen` | asserted (write-enable carried with result) |
 
-## 2. 正确性测试
+The output matches elementwise addition of `[1,2,3,4,5,6,7,8]` and `[8,7,6,5,4,3,2,1]`. The timestamps are trace sampling units, **not physical gate delays**. This view demonstrates the functional-unit result; it does **not independently prove architectural commit timing**.
 
-### 定向边界测试
+## 3. Stage 2 — Custom VDOT verification
 
-| 测试 | 实际值 | 期望值 |
-|---|---:|---:|
-| positive | 120 | 120 |
-| negative | -36 | -36 |
-| maximum | 131072 | 131072 |
-| minimum | -130048 | -130048 |
+The custom `vdot.vv` uses 8 signed INT8 products and a balanced reduction tree to return a signed 32-bit dot product. RTL–NEMU differential testing passed **76/76** cases: 4 directed cases (positive, negative, maximum, minimum), 8 lane-routing cases, and 64 fixed-seed randomized cases (`0x013157a6`). See `results/validation-difftest.log`.
 
-每组测试还检查写回结果高 96 位是否全部为零。
+## 4. Stage 3 — Standard RVV baseline and comparison
 
-### Lane 接线测试
+The standard RVV baseline uses `vle8.v`, `vwmul.vv`, `vwredsum.vs`, and `vmv.x.s`. The VDOT path uses two vector loads, custom `vdot.vv`, and extraction of its **32-bit** result using `SEW=32` before `vmv.x.s`. Both implementations include configuration, loads and result extraction in the timed loop.
 
-测试逐次只激活一个 lane，用于发现：
+Both paths passed four cross-implementation directed cases:
 
-- lane 顺序错误
-- byte 切片错误
-- lane 丢失或重复
-- 符号扩展错误
+| Case | Scalar | RVV | VDOT |
+|---|---:|---:|---:|
+| Positive | 120 | 120 | 120 |
+| Negative | -120 | -120 | -120 |
+| Maximum | 131072 | 131072 | 131072 |
+| Minimum | -130048 | -130048 | -130048 |
 
-```text
-vdot.vv lane routing PASS: 8 cases
-```
+Benchmark settings: 1000 dot products per timing round, 5 rounds, 32 warm-up calls; best cycle count reported per implementation, with measurement order rotated. Source arrays are volatile; auto-vectorization disabled. Both programs ran with NEMU Difftest enabled and exited via `HIT GOOD TRAP`.
 
-### 固定种子随机测试
+| Implementation | Total cycles / 1000 dots | Cycles / dot | Speedup vs VDOT |
+|---|---:|---:|---:|
+| Scalar C | 24,846 | 24.846 | 2.756× |
+| Standard RVV | 13,349 | 13.349 | **1.480×** |
+| Custom VDOT | 9,015 | 9.015 | 1.000× |
 
-使用固定种子 `0x013157a6` 生成 64 组输入。期望结果由普通 C 标量循环独立计算。
+**Official vector-instruction baseline comparison: 13,349 / 9,015 = 1.480× speedup**, equivalent to approximately 32.5% fewer measured cycles. This is a dot-product **kernel microbenchmark**, not isolated instruction latency and not whole-LLM tokens/s. Source log: `results/benchmark-rvv-difftest.log`.
 
-```text
-vdot.vv deterministic random PASS: 64 cases
-vdot.vv test PASS: 76 total cases
-```
+## 5. Scope and limits
 
-## 3. RTL–NEMU 差分测试
-
-验证程序和性能程序都加载修改后的 NEMU 参考模型：
-
-```text
-The first instruction of core 0 has commited. Difftest enabled.
-```
-
-两个程序都正常运行到：
-
-```text
-Core 0: HIT GOOD TRAP
-```
-
-说明 XiangShan RTL 与 NEMU 的体系结构状态一致。
-
-## 4. 性能测试方法
-
-性能测试比较：
-
-1. 普通标量 C 点积。
-2. 自定义 `vdot.vv` 点积。
-
-测试条件：
-
-- 两者读取相同的两个 8 元素 INT8 数组。
-- 关闭编译器自动向量化。
-- 输入声明为 `volatile`，防止常量折叠。
-- 两个内核均使用 `noinline`。
-- 预热 32 次。
-- 每轮运行 1000 次。
-- 测量 5 轮并取最小周期数。
-- 交替改变两个实现的测量顺序。
-
-反汇编确认标量版本使用：
-
-```text
-lbu + 符号扩展 + mulw + addw
-```
-
-标量版本没有使用向量指令。
-
-VDOT 版本使用：
-
-```text
-vsetivli
-vle8.v
-vle8.v
-.word 0xe61101d7
-vmv.x.s
-```
-
-## 5. 性能结果
-
-| 实现 | 1000 次总周期 | 每次点积周期 |
-|---|---:|---:|
-| 标量 C | 24862 | 24.862 |
-| 自定义 VDOT | 8203 | 8.203 |
-
-计算加速比：
-
-```text
-24.862 / 8.203 = 3.030×
-```
-
-最终结果：
-
-```text
-vdot speedup: 3.030x
-vdot benchmark PASS
-```
-
-## 6. 结果解释
-
-`8.203 cycles/dot` 是完整点积内核的周期，其中包含：
-
-- 向量配置
-- 两次向量加载
-- VDOT 指令
-- 结果移动到标量寄存器
-- 循环与函数调用的摊销开销
-
-因此它不是只计算乘加树组合延迟得到的理想数字，而是实际程序测得的端到端结果。
+- Fixed SEW=8, LMUL=1, VL=8, unmasked dot product.
+- No full LLM inference performance claim.
+- No ASIC PPA claim. Preliminary generic Yosys cells for the VDOT-equipped `VIAluFix` are not a baseline-versus-modified area delta.
+- Simulation waveforms and testcase pass do not replace a comprehensive microarchitectural timing signoff.

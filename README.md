@@ -1,87 +1,44 @@
-# CIE 2026 XiangShan VDOT
+# CIE 2026 — XiangShan Kunminghu V2 Custom VDOT
 
-基于香山昆明湖 V2 的 RISC-V 自定义有符号 INT8 向量点积指令。
+Implementation of an eight-lane signed INT8 dot-product instruction, `vdot.vv`, in the XiangShan vector integer ALU. The project covers the three published CIE stages: environment/waveform verification, RTL design and functional tests, and NEMU differential testing plus a standard-RVV performance baseline.
 
-## 项目内容
+## Instruction
 
-本项目新增：
+`vdot.vv vd, vs2, vs1`: sum eight signed INT8 products into signed INT32; clear upper bits of the 128-bit destination. Supported: SEW=8, LMUL=1, VL=8, unmasked. Example: `.word 0xe61101d7` (`vdot.vv v3, v1, v2`).
 
-- XiangShan `vdot.vv` 指令译码
-- 8 路有符号 INT8 并行乘法器
-- 平衡加法树
-- 32 位点积结果写回
-- NEMU 参考模型
-- RTL–NEMU 差分验证
-- 正确性测试和性能测试
+## Key results
 
-## 指令功能
+| Evidence | Result |
+|---|---|
+| VDOT directed + lane + randomized tests | **76/76 PASS** |
+| RTL–NEMU Difftest | PASS (`HIT GOOD TRAP`) |
+| VADD functional test | 8 lanes PASS; waveform captured |
+| Scalar C | 24.846 cycles/dot |
+| Standard RVV (`vwmul.vv` + `vwredsum.vs`) | 13.349 cycles/dot |
+| Custom VDOT | **9.015 cycles/dot** |
+| Standard RVV → VDOT speedup | **1.480×** |
 
-```text
-vdot.vv vd, vs2, vs1
+Timing measures a complete dot-product kernel (vector configuration, loads, arithmetic, extraction and loop overhead), **not** single-instruction latency or end-to-end LLM inference. See [detailed results](docs/RESULTS.md) and [hardware design](docs/DESIGN.md).
 
-vd[31:0] = sum(vs2[i] * vs1[i]), i = 0..7
-vd[127:32] = 0
-```
+## Repository layout
 
-当前支持：
+- `patches/` — source changes for Yunsuan, rocket-chip, XiangShan, NEMU, nexus-am.
+- `scripts/` — reproducible patch application, build and test commands.
+- `docs/DESIGN.md` — ISA encoding, hardware datapath, constraints.
+- `docs/RESULTS.md` — directed/random tests, RVV comparison, VADD waveform analysis.
+- `results/` — simulator logs, waveforms and evidence.
 
-- `SEW = 8`
-- `LMUL = 1`
-- 8 个 signed INT8 元素
-- signed INT32 结果
-- 不支持 mask
+## Reproduce
 
-示例机器码：
-
-```text
-vdot.vv v3, v1, v2
-.word 0xe61101d7
-```
-
-## 验证结果
-
-| 项目 | 结果 |
-|---|---:|
-| 定向边界测试 | 4/4 通过 |
-| Lane 接线测试 | 8/8 通过 |
-| 固定种子随机测试 | 64/64 通过 |
-| RTL–NEMU 差分测试 | 通过 |
-| 总测试数量 | 76 |
-
-## 性能结果
-
-| 实现 | 每次点积周期 |
-|---|---:|
-| 标量 C | 24.862 cycles |
-| 自定义 VDOT | 8.203 cycles |
-
-```text
-加速比：3.030×
-```
-
-## 目录结构
-
-```text
-patches/    各上游仓库的源码补丁
-scripts/    应用补丁、构建和测试脚本
-results/    差分测试与性能测试结果
-```
-
-## 使用方法
-
-假设本项目与 `xs-env` 位于同一个目录：
+Use the pinned upstream revisions in `versions.env`, in the XiangShan `xs-env` Nix development shell:
 
 ```bash
+# Execute from the directory containing both xs-env and cie2026-jade-vdot
 ./cie2026-jade-vdot/scripts/apply-patches.sh "$(pwd)/xs-env"
 ./cie2026-jade-vdot/scripts/build.sh "$(pwd)/xs-env"
 ./cie2026-jade-vdot/scripts/test.sh "$(pwd)/xs-env"
 ```
 
-构建命令需要在 xs-env 的 Nix 开发环境中执行。
+`test.sh` runs the VDOT correctness program and benchmark binary. Before running updated benchmark sources in an existing workspace, recompile `xs-env/nexus-am/apps/vdot-bench-jade` (the test script does not rebuild binaries). The dedicated VADD executable can be built with `make -C xs-env/nexus-am/apps/vadd-wave-jade ARCH=riscv64-xs`; waveform capture requires `--dump-wave-full`.
 
-## 上游项目
-
-- https://github.com/OpenXiangShan/xs-env
-- https://github.com/OpenXiangShan/XiangShan
-- https://github.com/OpenXiangShan/NEMU
-- https://github.com/OpenXiangShan/nexus-am
+Upstream: [xs-env](https://github.com/OpenXiangShan/xs-env) · [XiangShan](https://github.com/OpenXiangShan/XiangShan) · [NEMU](https://github.com/OpenXiangShan/NEMU).

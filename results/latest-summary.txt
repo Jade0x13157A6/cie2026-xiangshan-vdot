@@ -1,13 +1,46 @@
-CIE 2026 XiangShan VDOT test summary
+CIE 2026 XiangShan VDOT - Final Results
 
-Validation:
-vdot.vv lane routing PASS: 8 cases
-vdot.vv deterministic random PASS: 64 cases seed=0x013157a6
-vdot.vv test PASS: 76 total cases
+Functional verification
+-----------------------
+Directed boundary tests: 4/4 PASS
+Lane routing tests: 8/8 PASS
+Deterministic random tests: 64/64 PASS
+Total: 76/76 PASS
+RTL-NEMU Difftest: PASS
 
-Performance:
-correctness: scalar=120 vdot=120 expected=120
-scalar: total=24862 cycles, per_dot=24.862 cycles
-vdot  : total=8203 cycles, per_dot=8.203 cycles
-vdot speedup: 3.030x
-vdot benchmark PASS
+Standard RVV baseline
+---------------------
+positive: PASS
+negative: PASS
+maximum: PASS
+minimum: PASS
+Total: 4/4 PASS
+
+Performance
+-----------
+Benchmark: 1000 dot products, 5 measurement rounds
+Reported values: best total cycles over 5 rounds
+
+Scalar C:     24846 cycles / 1000 = 24.846 cycles/dot
+Standard RVV: 13349 cycles / 1000 = 13.349 cycles/dot
+Custom VDOT:   9015 cycles / 1000 =  9.015 cycles/dot
+
+Scalar to VDOT speedup: 2.756x
+RVV to VDOT speedup:    1.480x
+
+VADD waveform verification
+--------------------------
+Instruction: vadd.vv v3, v1, v2
+Encoding: 0x021101d7
+SEW: 8
+Expected result: [9,9,9,9,9,9,9,9]
+Observed result: 0x0909090909090909
+Verification: PASS
+RTL-NEMU Difftest: PASS
+
+Waveform screenshot:
+results/waveforms/vadd_execution.png
+
+Note: Performance figures measure the complete benchmark kernel,
+including vector setup and data movement. They are not isolated
+single-instruction execution latencies.

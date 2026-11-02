@@ -1,3 +1,74 @@
+diff --git a/apps/vadd-wave-jade/Makefile b/apps/vadd-wave-jade/Makefile
+new file mode 100644
+index 00000000..c7506bf3
+--- /dev/null
++++ b/apps/vadd-wave-jade/Makefile
+@@ -0,0 +1,6 @@
++NAME = vadd-wave-jade
++SRCS = vadd_wave.c
++
++MARCH ?= rv64gcv_zba
++
++include $(AM_HOME)/Makefile.app
+diff --git a/apps/vadd-wave-jade/vadd_wave.c b/apps/vadd-wave-jade/vadd_wave.c
+new file mode 100644
+index 00000000..2bfe8dc7
+--- /dev/null
++++ b/apps/vadd-wave-jade/vadd_wave.c
+@@ -0,0 +1,53 @@
++#include <klib.h>
++#include <stdint.h>
++
++static volatile int8_t a[8] __attribute__((aligned(16))) =
++    {1, 2, 3, 4, 5, 6, 7, 8};
++
++static volatile int8_t b[8] __attribute__((aligned(16))) =
++    {8, 7, 6, 5, 4, 3, 2, 1};
++
++static volatile int8_t result[8] __attribute__((aligned(16)));
++
++static void init_vector(void)
++{
++    asm volatile(
++        "lui t0, 0x2\n"
++        "addiw t0, t0, 512\n"
++        "csrs mstatus, t0\n"
++        "csrwi vcsr, 0\n"
++        "csrwi vstart, 0\n"
++        :
++        :
++        : "t0", "memory"
++    );
++}
++
++int main(void)
++{
++    init_vector();
++
++    asm volatile(
++        "vsetivli zero, 8, e8, m1, ta, ma\n"
++        "vle8.v v1, (%[a])\n"
++        "vle8.v v2, (%[b])\n"
++        "vadd.vv v3, v1, v2\n"
++        "vse8.v v3, (%[result])\n"
++        :
++        : [a] "r"(a),
++          [b] "r"(b),
++          [result] "r"(result)
++        : "memory"
++    );
++
++    for (int i = 0; i < 8; i++) {
++        if (result[i] != 9) {
++            printf("vadd.vv FAIL: lane=%d actual=%d expected=9\n",
++                   i, (int)result[i]);
++            return 1;
++        }
++    }
++
++    printf("vadd.vv PASS: 8 lanes\n");
++    return 0;
++}
 diff --git a/apps/vdot-bench-jade/Makefile b/apps/vdot-bench-jade/Makefile
 new file mode 100644
 index 00000000..084c64c7
@@ -13,10 +84,10 @@ index 00000000..084c64c7
 +include $(AM_HOME)/Makefile.app
 diff --git a/apps/vdot-bench-jade/vdot_bench.c b/apps/vdot-bench-jade/vdot_bench.c
 new file mode 100644
-index 00000000..495d7a6a
+index 00000000..a2d997e4
 --- /dev/null
 +++ b/apps/vdot-bench-jade/vdot_bench.c
-@@ -0,0 +1,205 @@
+@@ -0,0 +1,339 @@
 +#include <klib.h>
 +#include <stdint.h>
 +
@@ -93,6 +164,7 @@ index 00000000..495d7a6a
 +        "vle8.v v1, (%[a])\n"
 +        "vle8.v v2, (%[b])\n"
 +        ".word 0xe61101d7\n"
++        "vsetivli zero, 1, e32, m1, ta, ma\n"
 +        "vmv.x.s %[result], v3\n"
 +        : [result] "=r"(raw)
 +        : [a] "r"(a),
@@ -103,6 +175,102 @@ index 00000000..495d7a6a
 +    return (int32_t)(uint32_t)raw;
 +}
 +
++
++/*
++ * Standard RVV baseline:
++ *   signed INT8 x INT8 -> INT16 products
++ *   widening reduction of eight INT16 values -> INT32
++ *
++ * Register allocation:
++ *   v1, v2   : INT8 source vectors
++ *   v4-v5    : widened multiplication destination
++ *   v8-v9    : widened reduction destination
++ *   v10-v11  : zero-initialized reduction seed
++ */
++static __attribute__((noinline)) int32_t rvv_dot_once(
++    const volatile int8_t *a,
++    const volatile int8_t *b)
++{
++    uintptr_t raw;
++
++    asm volatile(
++        "vsetivli zero, 1, e32, m1, ta, ma\n"
++        "vmv.s.x v10, zero\n"
++        "vsetivli zero, 8, e8, m1, ta, ma\n"
++        "vle8.v v1, (%[a])\n"
++        "vle8.v v2, (%[b])\n"
++        "vwmul.vv v4, v1, v2\n"
++        "vsetivli zero, 8, e16, m1, ta, ma\n"
++        "vwredsum.vs v8, v4, v10\n"
++        "vsetivli zero, 1, e32, m1, ta, ma\n"
++        "vmv.x.s %[result], v8\n"
++        : [result] "=r"(raw)
++        : [a] "r"(a), [b] "r"(b)
++        : "memory"
++    );
++
++    return (int32_t)(uint32_t)raw;
++}
++
++
++static int check_dot_cases(void)
++{
++    static const int8_t inputs_a[4][ELEMENTS] = {
++        { 1, 2, 3, 4, 5, 6, 7, 8 },
++        { -1, -2, -3, -4, -5, -6, -7, -8 },
++        { -128, -128, -128, -128, -128, -128, -128, -128 },
++        { -128, -128, -128, -128, -128, -128, -128, -128 }
++    };
++
++    static const int8_t inputs_b[4][ELEMENTS] = {
++        { 8, 7, 6, 5, 4, 3, 2, 1 },
++        { 8, 7, 6, 5, 4, 3, 2, 1 },
++        { -128, -128, -128, -128, -128, -128, -128, -128 },
++        { 127, 127, 127, 127, 127, 127, 127, 127 }
++    };
++
++    static const int32_t expected[4] = {
++        120, -120, 131072, -130048
++    };
++
++    static const char *names[4] = {
++        "positive", "negative", "maximum", "minimum"
++    };
++
++    for (int t = 0; t < 4; t++) {
++        for (int i = 0; i < ELEMENTS; i++) {
++            src_a[i] = inputs_a[t][i];
++            src_b[i] = inputs_b[t][i];
++        }
++
++        int32_t scalar = scalar_dot_once(src_a, src_b);
++        int32_t rvv = rvv_dot_once(src_a, src_b);
++        int32_t vdot = custom_dot_once(src_a, src_b);
++
++        printf(
++            "%s: scalar=%d rvv=%d vdot=%d expected=%d\n",
++            names[t], (int)scalar, (int)rvv,
++            (int)vdot, (int)expected[t]
++        );
++
++        if (scalar != expected[t] ||
++            rvv != expected[t] ||
++            vdot != expected[t]) {
++            printf("RVV baseline correctness FAIL\n");
++            return 1;
++        }
++    }
++
++    /* Restore the original benchmark inputs. */
++    for (int i = 0; i < ELEMENTS; i++) {
++        src_a[i] = inputs_a[0][i];
++        src_b[i] = inputs_b[0][i];
++    }
++
++    printf("RVV baseline correctness PASS: 4 cases\n");
++    return 0;
++}
++
 +static uint64_t measure_scalar(void)
 +{
 +    int32_t checksum = 0;
@@ -110,6 +278,22 @@ index 00000000..495d7a6a
 +
 +    for (int i = 0; i < ITERATIONS; i++) {
 +        checksum += scalar_dot_once(src_a, src_b);
++    }
++
++    uint64_t end = read_mcycle();
++    benchmark_sink = checksum;
++
++    return end - start;
++}
++
++
++static uint64_t measure_rvv(void)
++{
++    int32_t checksum = 0;
++    uint64_t start = read_mcycle();
++
++    for (int i = 0; i < ITERATIONS; i++) {
++        checksum += rvv_dot_once(src_a, src_b);
 +    }
 +
 +    uint64_t end = read_mcycle();
@@ -146,77 +330,98 @@ index 00000000..495d7a6a
 +    );
 +}
 +
++
 +int main(void)
 +{
 +    uint64_t best_scalar = ~(uint64_t)0;
++    uint64_t best_rvv = ~(uint64_t)0;
 +    uint64_t best_custom = ~(uint64_t)0;
 +
 +    init_vector();
 +
++    if (check_dot_cases() != 0)
++        return 1;
++
 +    int32_t scalar_result = scalar_dot_once(src_a, src_b);
++    int32_t rvv_result = rvv_dot_once(src_a, src_b);
 +    int32_t custom_result = custom_dot_once(src_a, src_b);
 +
 +    printf(
-+        "correctness: scalar=%d vdot=%d expected=120\n",
++        "correctness: scalar=%d rvv=%d vdot=%d expected=120\n",
 +        (int)scalar_result,
++        (int)rvv_result,
 +        (int)custom_result
 +    );
 +
-+    if (scalar_result != 120 || custom_result != 120) {
++    if (scalar_result != 120 ||
++        rvv_result != 120 ||
++        custom_result != 120) {
 +        printf("vdot benchmark correctness FAIL\n");
 +        return 1;
 +    }
 +
-+    /*
-+     * Warm both instruction paths and the input cache before measurement.
-+     */
 +    for (int i = 0; i < WARMUP; i++) {
 +        benchmark_sink = scalar_dot_once(src_a, src_b);
++        benchmark_sink = rvv_dot_once(src_a, src_b);
 +        benchmark_sink = custom_dot_once(src_a, src_b);
 +    }
 +
 +    /*
-+     * Alternate measurement order to avoid systematically favoring whichever
-+     * implementation is measured second.
++     * Rotate measurement order across rounds.
 +     */
 +    for (int round = 0; round < ROUNDS; round++) {
 +        uint64_t scalar_cycles;
++        uint64_t rvv_cycles;
 +        uint64_t custom_cycles;
 +
-+        if ((round & 1) == 0) {
++        if (round % 3 == 0) {
 +            scalar_cycles = measure_scalar();
++            rvv_cycles = measure_rvv();
 +            custom_cycles = measure_custom();
++        } else if (round % 3 == 1) {
++            rvv_cycles = measure_rvv();
++            custom_cycles = measure_custom();
++            scalar_cycles = measure_scalar();
 +        } else {
 +            custom_cycles = measure_custom();
 +            scalar_cycles = measure_scalar();
++            rvv_cycles = measure_rvv();
 +        }
 +
-+        if (scalar_cycles < best_scalar) {
++        if (scalar_cycles < best_scalar)
 +            best_scalar = scalar_cycles;
-+        }
-+
-+        if (custom_cycles < best_custom) {
++        if (rvv_cycles < best_rvv)
++            best_rvv = rvv_cycles;
++        if (custom_cycles < best_custom)
 +            best_custom = custom_cycles;
-+        }
 +
 +        printf(
-+            "round %d: scalar=%lu custom=%lu cycles\n",
++            "round %d: scalar=%lu rvv=%lu custom=%lu cycles\n",
 +            round,
 +            (unsigned long)scalar_cycles,
++            (unsigned long)rvv_cycles,
 +            (unsigned long)custom_cycles
 +        );
 +    }
 +
-+    uint64_t speedup_milli = best_scalar * 1000 / best_custom;
++    uint64_t scalar_speedup = best_scalar * 1000 / best_custom;
++    uint64_t rvv_speedup = best_rvv * 1000 / best_custom;
 +
 +    printf("=== best result over %d rounds ===\n", ROUNDS);
 +    print_per_dot("scalar", best_scalar);
++    print_per_dot("rvv   ", best_rvv);
 +    print_per_dot("vdot  ", best_custom);
 +
 +    printf(
-+        "vdot speedup: %lu.%03lux\n",
-+        (unsigned long)(speedup_milli / 1000),
-+        (unsigned long)(speedup_milli % 1000)
++        "scalar -> vdot speedup: %lu.%03lux\n",
++        (unsigned long)(scalar_speedup / 1000),
++        (unsigned long)(scalar_speedup % 1000)
++    );
++
++    printf(
++        "rvv -> vdot speedup: %lu.%03lux\n",
++        (unsigned long)(rvv_speedup / 1000),
++        (unsigned long)(rvv_speedup % 1000)
 +    );
 +
 +    printf("vdot benchmark PASS\n");

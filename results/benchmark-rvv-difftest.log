@@ -1,0 +1,29 @@
+emu compiled at Jan  1 1980, 00:00:00
+Using simulated 32768B flash
+Using simulated 8386560MB RAM
+The image is xs-env/nexus-am/apps/vdot-bench-jade/build/vdot-bench-jade-riscv64-xs.bin
+The reference model is xs-env/NEMU/build/riscv64-nemu-interpreter-so
+The first instruction of core 0 has commited. Difftest enabled.
+positive: scalar=120 rvv=120 vdot=120 expected=120
+negative: scalar=-120 rvv=-120 vdot=-120 expected=-120
+maximum: scalar=131072 rvv=131072 vdot=131072 expected=131072
+minimum: scalar=-130048 rvv=-130048 vdot=-130048 expected=-130048
+RVV baseline correctness PASS: 4 cases
+correctness: scalar=120 rvv=120 vdot=120 expected=120
+round 0: scalar=25065 rvv=13407 custom=9072 cycles
+round 1: scalar=24846 rvv=13775 custom=9071 cycles
+round 2: scalar=25018 rvv=13349 custom=9431 cycles
+round 3: scalar=25436 rvv=13349 custom=9015 cycles
+round 4: scalar=24962 rvv=13756 custom=9015 cycles
+=== best result over 5 rounds ===
+scalar: total=24846 cycles, per_dot=24.846 cycles
+rvv   : total=13349 cycles, per_dot=13.349 cycles
+vdot  : total=9015 cycles, per_dot=9.015 cycles
+scalar -> vdot speedup: 2.756x
+rvv -> vdot speedup: 1.480x
+vdot benchmark PASS
+Core 0: [32mHIT GOOD TRAP at pc = 0x0
+[0m[35mCore-0 instrCnt = 881,634, cycleCnt = 358,264, IPC = 2.460850
+[0m[34mSeed=0 Guest cycle spent: 358,284 (this will be different from cycleCnt if emu loads a snapshot)
+[0m[34mHost time spent: 525,171ms
+[0m

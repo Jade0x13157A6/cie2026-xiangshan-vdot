@@ -8,3 +8,7 @@ results/build-*.log
 # Editor temporary files
 *~
 *.swp
+
+# Regenerable full hardware trace (keep PNG evidence)
+results/waveforms/*.fst
+results/waveforms/*.vcd
