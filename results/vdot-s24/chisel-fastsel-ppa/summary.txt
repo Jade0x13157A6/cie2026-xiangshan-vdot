@@ -1,0 +1,18 @@
+ACTUAL CHISEL-GENERATED VIAluFix: PRE-FASTSEL VS FASTSEL
+Same top, same Yosys/ABC synthesis flow; generic gates, not physical PPA.
+
+pre-fastsel cells=48549  whole-module levels=162
+fastsel     cells=48574  whole-module levels=163
+cell change=+25 (+0.051%)
+
+outVdotResult register D input cone:
+  pre-fastsel: 56 gate levels, start=io_in_bits_data_src_1
+  fastsel: 53 gate levels, start=io_in_bits_ctrl_fuOpType
+  change: -3 levels
+outSparseResult register D input cone:
+  pre-fastsel: 51 gate levels, start=io_in_bits_data_src_1
+  fastsel: 49 gate levels, start=io_in_bits_ctrl_fuOpType
+  change: -2 levels
+
+Note: register D-cone depths are technology-independent and include any
+input/control logic feeding the register; no delay(ns), area(um2) or Fmax.

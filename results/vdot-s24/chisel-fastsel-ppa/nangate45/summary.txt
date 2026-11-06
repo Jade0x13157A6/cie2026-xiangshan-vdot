@@ -1,0 +1,23 @@
+
+NANGATE45 STANDARD-CELL MAPPING
+Top: VIAluFix
+Library: NangateOpenCellLibrary_typical.lib
+Flow: read_slang + Yosys + dfflibmap + ABC
+No placement or routing.
+
+Version             Cells       Area (um^2)
+Sparse disabled     38136       48587.028
+Pre-FastSel         38789       49517.496
+FastSel             38724       49354.172
+
+Sparse extension overhead (FastSel vs disabled)
+  Area: +767.144 um^2
+  Relative: +1.579%
+
+FastSel optimization (vs Pre-FastSel)
+  Area: -163.324 um^2
+  Relative: -0.330%
+
+These are Liberty-based mapped cell areas.
+They do not include routing, placement overhead,
+physical timing closure, or power estimation.

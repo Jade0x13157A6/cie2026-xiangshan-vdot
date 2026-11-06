@@ -1,0 +1,3 @@
+Yosys 0.67+102 (git sha1 07a615a28-dirty, Release, Clang /usr/bin/clang++ 21.1.8)
+d7ea95f2d13584fa9405affc0ef3331757b1d7beb9079a6632ec391f0c8d4516  /home/jade/work/xiangshan-vdot/cie2026_vdot_upgrade/rtl/vdot_dense_sparse_int8.sv
+9863238552d3b27f108fa0720621f676c63ffc05dec8fd5bd2b24ad611f1beb4  /home/jade/work/xiangshan-vdot/vdot_ppa_study/vdot_ppa_references.sv

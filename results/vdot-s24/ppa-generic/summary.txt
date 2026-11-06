@@ -1,0 +1,9 @@
+Generic-cell comparison (ABC technology-independent gates, not GE or silicon area)
+
+vdot_dense8_reference              cells=    None    longest_path_levels=46
+vdot_dense_sparse_int8             cells=    None    longest_path_levels=58
+vdot_dense_sparse_unshared         cells=    None    longest_path_levels=49
+
+CAVEAT: dense reference here is a standalone CSA recreation, NOT a separately generated XiangShan core.
+All three modules are unclocked and optimized with the same Yosys synth flow.
+Gate count/logic levels are technology-independent proxies; no target timing, cell area, power, or Fmax.

@@ -1,0 +1,153 @@
+=== TARGET: outVdotResult ===
+Resolved D pins: 19 (expected 19)
+Startpoint: io_in_bits_ctrl_fuOpType[4] (input port clocked by core_clk)
+Endpoint: vdot_dense_ff_017
+          (rising edge-triggered flip-flop clocked by core_clk)
+Path Group: core_clk
+Path Type: max
+
+    Delay      Time   Description
+-------------------------------------------------------------
+   0.0000    0.0000   clock core_clk (rise edge)
+   0.0000    0.0000   clock network delay (ideal)
+   0.0000    0.0000 ^ input external delay
+   0.0000    0.0000 ^ io_in_bits_ctrl_fuOpType[4] (in)
+   0.0253    0.0253 v _66058_/ZN (INV_X1)
+   0.0817    0.1070 ^ _71998_/ZN (NOR2_X1)
+   0.0353    0.1423 v _60153_/ZN (NAND3_X1)
+   0.4501    0.5924 ^ _60154_/ZN (NOR3_X1)
+   0.0978    0.6902 v _63028_/ZN (OAI21_X1)
+   0.0386    0.7288 ^ _63175_/ZN (NAND2_X1)
+   0.0558    0.7846 v _63177_/ZN (OAI21_X1)
+   0.0427    0.8273 ^ _63313_/ZN (NAND2_X1)
+   0.0614    0.8887 ^ _63316_/Z (XOR2_X1)
+   0.0237    0.9124 v _63317_/ZN (NAND3_X1)
+   0.0307    0.9431 ^ _63318_/ZN (OAI21_X1)
+   0.0493    0.9925 ^ _63321_/ZN (XNOR2_X1)
+   0.0607    1.0532 ^ _63322_/Z (XOR2_X1)
+   0.0252    1.0784 v _63348_/ZN (XNOR2_X1)
+   0.0594    1.1378 v _63349_/Z (XOR2_X1)
+   0.0787    1.2165 v _63354_/ZN (OR3_X1)
+   0.0352    1.2516 v _63355_/ZN (AND2_X1)
+   0.0309    1.2825 v _63375_/ZN (AND2_X1)
+   0.0299    1.3124 v _63376_/ZN (AND2_X1)
+   0.0424    1.3548 ^ _63377_/ZN (AOI21_X1)
+   0.0413    1.3961 ^ _63378_/ZN (OR3_X1)
+   0.0157    1.4118 v _63380_/ZN (AOI21_X1)
+   0.0548    1.4666 v _63381_/ZN (OR2_X1)
+   0.0138    1.4804 ^ _63382_/ZN (INV_X1)
+   0.0090    1.4894 v _63385_/ZN (NOR2_X1)
+   0.0766    1.5660 v _63914_/ZN (OR3_X1)
+   0.0352    1.6012 v _63915_/ZN (AND2_X1)
+   0.0239    1.6251 ^ _63917_/ZN (NAND2_X1)
+   0.0087    1.6338 v _63918_/ZN (INV_X1)
+   0.0312    1.6650 ^ _63943_/ZN (NOR2_X1)
+   0.0468    1.7118 ^ _63944_/ZN (XNOR2_X1)
+   0.0247    1.7365 v _63965_/ZN (XNOR2_X1)
+   0.0598    1.7963 v _63968_/Z (XOR2_X1)
+   0.0489    1.8452 v _64129_/ZN (OR2_X1)
+   0.0335    1.8787 v _64162_/ZN (AND3_X1)
+   0.0550    1.9337 v _64163_/ZN (OR2_X1)
+   0.0588    1.9926 v _64202_/Z (XOR2_X1)
+   0.0242    2.0168 ^ _64237_/ZN (OAI21_X1)
+   0.0421    2.0588 ^ _64238_/ZN (AND2_X1)
+   0.0108    2.0696 v _64239_/ZN (NOR2_X1)
+   0.0519    2.1215 ^ _64240_/ZN (AOI21_X1)
+   0.0133    2.1349 v _64241_/ZN (NOR2_X1)
+   0.0405    2.1753 ^ _64242_/ZN (AOI21_X1)
+   0.0337    2.2090 ^ _64244_/ZN (OR2_X1)
+   0.0158    2.2248 v _64245_/ZN (AOI21_X1)
+   0.0533    2.2781 v _64246_/ZN (OR2_X1)
+   0.0193    2.2974 ^ _64248_/ZN (NAND2_X1)
+   0.0174    2.3148 v _64249_/ZN (NAND2_X1)
+   0.0230    2.3378 ^ _64253_/ZN (NOR2_X1)
+   0.0136    2.3514 v _64254_/ZN (NOR2_X1)
+   0.1009    2.4523 ^ _64255_/ZN (AOI21_X1)
+   0.0000    2.4523 ^ vdot_dense_ff_017/D (DFF_X1)
+             2.4523   data arrival time
+
+  10.0000   10.0000   clock core_clk (rise edge)
+   0.0000   10.0000   clock network delay (ideal)
+   0.0000   10.0000   clock reconvergence pessimism
+            10.0000 ^ vdot_dense_ff_017/CK (DFF_X1)
+  -0.0417    9.9583   library setup time
+             9.9583   data required time
+-------------------------------------------------------------
+             9.9583   data required time
+            -2.4523   data arrival time
+-------------------------------------------------------------
+             7.5060   slack (MET)
+
+
+=== TARGET: outSparseResult ===
+Resolved D pins: 38 (expected 38)
+Startpoint: io_in_bits_ctrl_fuOpType[4] (input port clocked by core_clk)
+Endpoint: vdot_sparse_ff_015
+          (rising edge-triggered flip-flop clocked by core_clk)
+Path Group: core_clk
+Path Type: max
+
+    Delay      Time   Description
+-------------------------------------------------------------
+   0.0000    0.0000   clock core_clk (rise edge)
+   0.0000    0.0000   clock network delay (ideal)
+   0.0000    0.0000 ^ input external delay
+   0.0000    0.0000 ^ io_in_bits_ctrl_fuOpType[4] (in)
+   0.0253    0.0253 v _66058_/ZN (INV_X1)
+   0.0817    0.1070 ^ _71998_/ZN (NOR2_X1)
+   0.0353    0.1423 v _60153_/ZN (NAND3_X1)
+   0.4501    0.5924 ^ _60154_/ZN (NOR3_X1)
+   0.0978    0.6902 v _63028_/ZN (OAI21_X1)
+   0.0386    0.7288 ^ _63175_/ZN (NAND2_X1)
+   0.0558    0.7846 v _63177_/ZN (OAI21_X1)
+   0.0427    0.8273 ^ _63313_/ZN (NAND2_X1)
+   0.0614    0.8887 ^ _63316_/Z (XOR2_X1)
+   0.0237    0.9124 v _63317_/ZN (NAND3_X1)
+   0.0307    0.9431 ^ _63318_/ZN (OAI21_X1)
+   0.0493    0.9925 ^ _63321_/ZN (XNOR2_X1)
+   0.0607    1.0532 ^ _63322_/Z (XOR2_X1)
+   0.0252    1.0784 v _63348_/ZN (XNOR2_X1)
+   0.0594    1.1378 v _63349_/Z (XOR2_X1)
+   0.0787    1.2165 v _63354_/ZN (OR3_X1)
+   0.0352    1.2516 v _63355_/ZN (AND2_X1)
+   0.0309    1.2825 v _63375_/ZN (AND2_X1)
+   0.0299    1.3124 v _63376_/ZN (AND2_X1)
+   0.0424    1.3548 ^ _63377_/ZN (AOI21_X1)
+   0.0413    1.3961 ^ _63378_/ZN (OR3_X1)
+   0.0157    1.4118 v _63380_/ZN (AOI21_X1)
+   0.0548    1.4666 v _63381_/ZN (OR2_X1)
+   0.0138    1.4804 ^ _63382_/ZN (INV_X1)
+   0.0090    1.4894 v _63385_/ZN (NOR2_X1)
+   0.0766    1.5660 v _63914_/ZN (OR3_X1)
+   0.0352    1.6012 v _63915_/ZN (AND2_X1)
+   0.0239    1.6251 ^ _63917_/ZN (NAND2_X1)
+   0.0087    1.6338 v _63918_/ZN (INV_X1)
+   0.0312    1.6650 ^ _63943_/ZN (NOR2_X1)
+   0.0468    1.7118 ^ _63944_/ZN (XNOR2_X1)
+   0.0495    1.7613 ^ _63965_/ZN (XNOR2_X1)
+   0.0574    1.8187 ^ _63968_/Z (XOR2_X1)
+   0.0308    1.8495 ^ _64129_/ZN (OR2_X1)
+   0.0147    1.8642 v _64130_/ZN (AOI21_X1)
+   0.0532    1.9174 v _64131_/ZN (OR2_X1)
+   0.0309    1.9483 v _64133_/ZN (AND2_X1)
+   0.0439    1.9922 ^ _64134_/ZN (OAI21_X1)
+   0.0185    2.0107 v _64136_/ZN (AOI21_X1)
+   0.0421    2.0528 ^ _64137_/ZN (NOR2_X1)
+   0.0529    2.1057 ^ _64150_/ZN (XNOR2_X1)
+   0.0169    2.1226 v _64151_/ZN (OAI21_X1)
+   0.0000    2.1226 v vdot_sparse_ff_015/D (DFF_X1)
+             2.1226   data arrival time
+
+  10.0000   10.0000   clock core_clk (rise edge)
+   0.0000   10.0000   clock network delay (ideal)
+   0.0000   10.0000   clock reconvergence pessimism
+            10.0000 ^ vdot_sparse_ff_015/CK (DFF_X1)
+  -0.1110    9.8890   library setup time
+             9.8890   data required time
+-------------------------------------------------------------
+             9.8890   data required time
+            -2.1226   data arrival time
+-------------------------------------------------------------
+             7.7664   slack (MET)
+
+

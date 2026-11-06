@@ -1,5 +1,8 @@
 # 功能验证与性能评估结果
 
+**最新 S24 版本的评估数据**（含 Nangate45 标准单元面积、FastSel 比较、STA 原始日志、PairAcc INT8 MLP）请见 [S24_PPA.md](S24_PPA.md) 与 [S24.md](S24.md)。下文记录的是更早的 Dense/Hybrid CSA 结果，不能用作 S24 的最终 PPA。
+
+
 ## 1. 测试平台
 
 测试平台为香山（XiangShan）昆明湖 V2（`KunminghuV2Config`），使用 Verilator 5.048、修改后的 NEMU 参考模型及 RV64GCV 应用测试程序。RTL 与 NEMU 通过差分测试（Difftest）协同运行。

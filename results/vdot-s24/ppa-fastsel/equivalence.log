@@ -1,0 +1,5 @@
+PASS: FastSel RTL and baseline equivalence 6010 vectors
+- /home/jade/work/xiangshan-vdot/vdot_ppa_study/tb_vdot_fastsel.sv:37: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 6us; walltime 0.024 s; speed 250.265 us/s
+- Verilator: cpu 0.024 s on 1 threads; allocated 7 MB

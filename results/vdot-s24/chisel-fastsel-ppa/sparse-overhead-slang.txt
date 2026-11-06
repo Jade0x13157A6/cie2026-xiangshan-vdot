@@ -1,0 +1,12 @@
+
+=== Actual Chisel VIAluFix: Sparse Extension Cost ===
+
+                       Cells       Logic depth
+Sparse enabled         48574       163
+Sparse disabled        47633       162
+
+Incremental cells:     +941
+Relative overhead:     +1.976%
+
+Same read_slang + Yosys/ABC flow.
+Generic gates, not standard-cell area.

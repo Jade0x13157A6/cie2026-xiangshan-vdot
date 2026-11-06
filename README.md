@@ -11,6 +11,14 @@
 - **正确性：** 32/32 Python INT8 参考预测一致；31/32 分类正确；XiangShan + NEMU Difftest PASS、GOOD TRAP。
 - **测试证据：** [PairAcc 日志与摘要](results/vdot-s24/real-int8-pairacc/)。这是完整测试 MLP 的周期数，**不是 LLM 推理速度**；历史 RVV 测试不应与本次 PairAcc 作为同轮公平加速比。
 
+### S24 Nangate45 标准单元面积与 STA
+
+- **FastSel mapped VIAluFix**：49,354.172 μm²（Nangate45 typical Liberty）；Sparse disabled：48,587.028 μm²。
+- **Sparse 功能面积增量**：+767.144 μm²，**+1.579%（相对 VIAluFix，不是整颗 CPU）**。
+- **FastSel 相对 Pre-FastSel**：标准单元映射面积 −163.324 μm²（−0.330%）；独立 generic logic 最长路径从 56 减到 50 级。
+- **综合与 STA 的原始证据**：[S24 PPA 报告](docs/S24_PPA.md) / [证据清单](results/vdot-s24/PPA_EVIDENCE_MANIFEST.md)。STA 有日志，但尚未确认物理 Fmax、布局布线或功耗。
+- **实现与验证细节**：[S24 技术说明](docs/S24.md)。
+
 ### S24 复现入口（与旧版 Dense VDOT 区分）
 
 `versions.env` 和 `scripts/apply-patches.sh` 是**旧版 Dense/Hybrid** 的复现入口，**不能用于 S24**。在具有相同 `xs-env` 版本及其子仓库基础 commit 的工作区中，从项目根目录执行：

@@ -1,0 +1,4 @@
+Yosys 0.67+102 (git sha1 07a615a28-dirty, Release, Clang /usr/bin/clang++ 21.1.8)
+Verilator 5.048 2026-04-26 rev v5.048
+d7ea95f2d13584fa9405affc0ef3331757b1d7beb9079a6632ec391f0c8d4516  /home/jade/work/xiangshan-vdot/cie2026_vdot_upgrade/rtl/vdot_dense_sparse_int8.sv
+a203e88ad1a7f9f21462030e802d278687eae439b7b9baaa3d5f61344b5e26f2  /home/jade/work/xiangshan-vdot/vdot_ppa_study/vdot_dense_sparse_int8_fastsel.sv

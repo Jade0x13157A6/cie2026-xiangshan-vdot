@@ -1,0 +1,14 @@
+{
+  "vdot_dense8_reference": {
+    "generic_cells": null,
+    "ltp_length": 46
+  },
+  "vdot_dense_sparse_int8": {
+    "generic_cells": null,
+    "ltp_length": 58
+  },
+  "vdot_dense_sparse_unshared": {
+    "generic_cells": null,
+    "ltp_length": 49
+  }
+}

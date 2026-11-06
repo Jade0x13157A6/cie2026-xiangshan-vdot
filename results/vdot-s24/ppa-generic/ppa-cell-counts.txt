@@ -1,0 +1,22 @@
+
+Hardware Resource Comparison
+
+Dense-only: 3906 cells
+Dense/Sparse Shared: 4380 cells
+Dense/Sparse Unshared: 8138 cells
+
+Shared vs Dense:
+  Additional cells: +474
+  Change: +12.14%
+
+Shared vs Unshared:
+  Saved cells: 3758
+  Reduction: 46.18%
+
+Logic Depth:
+  Dense-only: 46
+  Shared: 58
+  Unshared: 49
+
+Technology-independent ABC mapping.
+Not standard-cell area or physical timing.

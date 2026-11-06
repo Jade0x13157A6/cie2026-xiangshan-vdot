@@ -1,0 +1,9 @@
+Standalone generic-gate comparison; not silicon PPA
+
+vdot_dense_sparse_int8              cells=  4389 longest_path_levels= 56
+vdot_dense_sparse_int8_fastsel      cells=  4409 longest_path_levels= 50
+
+FastSel cell change: +20 (+0.46%)
+FastSel path change: -6 levels
+
+These are ABC generic gates and longest logic paths; not timing in ns or standard-cell area.
