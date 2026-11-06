@@ -1,0 +1,146 @@
+diff --git a/src/main/scala/xiangshan/backend/fu/wrapper/VIAluFix.scala b/src/main/scala/xiangshan/backend/fu/wrapper/VIAluFix.scala
+index 1852aa513..175a70f09 100644
+--- a/src/main/scala/xiangshan/backend/fu/wrapper/VIAluFix.scala
++++ b/src/main/scala/xiangshan/backend/fu/wrapper/VIAluFix.scala
+@@ -194,38 +194,88 @@ class VIAluFix(cfg: FuConfig)(implicit p: Parameters) extends VecPipedFuncUnit(c
+   private val isVwsll = opcode.isVwsll
+ 
+   /*
+-   * vdot.vv:
+-   *   vd[31:0] = sum_{i=0}^{7} signed(vs1[i]) * signed(vs2[i])
+-   *   vd[127:32] = 0
+-   *
+-   * Eight signed int8 products are reduced with a balanced adder tree.
++   * Dense VDOT8 and 2:4 Sparse VDOT share exactly eight signed INT8 multipliers.
++   * Sparse operand contract:
++   *   vs1[63:0]   = eight activations
++   *   vs2[63:0]   = eight packed nonzero weights (four 2-weight groups)
++   *   vs2[79:64]  = four 4-bit 2:4 masks, LSB nibble first
++   *   vd[31:0]    = output channel 0, sign-extended from 19 bits
++   *   vd[63:32]   = output channel 1, sign-extended from 19 bits
++   *   vd[127:64]  = zero
++   * Dense VDOT8 remains bit-exact with the existing implementation.
+    */
+   private val isVdot = fuOpType === VialuFixType.vdot_vv
++  private val isSparseVdot = fuOpType === VialuFixType.vdots24_vv
++  private val vdotWidth = 19
+ 
++  private val sparseMasks = Seq.tabulate(4)(g => vs2(64 + 4 * g + 3, 64 + 4 * g))
++  private val sparseInvalidMask = sparseMasks.map(m => PopCount(m) =/= 2.U).reduce(_ || _)
++
++  // Index order is ascending within each four-element weight block.
++  private def firstIndex(m: UInt): UInt = MuxLookup(m, 0.U(2.W))(Seq(
++    "b0011".U -> 0.U(2.W), "b0101".U -> 0.U(2.W), "b1001".U -> 0.U(2.W),
++    "b0110".U -> 1.U(2.W), "b1010".U -> 1.U(2.W), "b1100".U -> 2.U(2.W)
++  ))
++  private def secondIndex(m: UInt): UInt = MuxLookup(m, 0.U(2.W))(Seq(
++    "b0011".U -> 1.U(2.W), "b0101".U -> 2.U(2.W), "b0110".U -> 2.U(2.W),
++    "b1001".U -> 3.U(2.W), "b1010".U -> 3.U(2.W), "b1100".U -> 3.U(2.W)
++  ))
++
++  // Input multiplexers precede multiplication, allowing Yosys/DC to share
++  // the original eight multipliers between both modes.
+   private val vdotProducts = Seq.tabulate(8) { i =>
+-    vs1(8 * i + 7, 8 * i).asSInt *
+-      vs2(8 * i + 7, 8 * i).asSInt
++    val group = i / 2
++    val base = (group % 2) * 4
++    // For valid 2:4 masks, select the lowest/highest set position directly.
++    // This removes binary-index encoding followed by dynamic Vec selection.
++    val m = sparseMasks(group)
++    val select = if ((i % 2) == 0) {
++      Seq(m(0), m(1) && !m(0), m(2) && !(m(0) || m(1)), false.B)
++    } else {
++      Seq(false.B, m(0) && m(1), m(2) && (m(0) || m(1)), m(3))
++    }
++    val aSparse = (0 until 4).map { j =>
++      val lane = vs1(8 * (base + j) + 7, 8 * (base + j))
++      lane & Fill(8, select(j))
++    }.reduce(_ | _)
++    val aDense = vs1(8 * i + 7, 8 * i)
++    Mux(isSparseVdot, aSparse, aDense).asSInt * vs2(8 * i + 7, 8 * i).asSInt
+   }
+ 
+-  private val vdotSumLevel1 = Seq.tabulate(4) { i =>
+-    vdotProducts(2 * i) +& vdotProducts(2 * i + 1)
++  private def csa3(a: UInt, b: UInt, c: UInt): (UInt, UInt) = {
++    val sum = a ^ b ^ c
++    val carry = ((a & b) | (a & c) | (b & c)) << 1
++    (sum(vdotWidth - 1, 0), carry(vdotWidth - 1, 0))
+   }
+ 
+-  private val vdotSumLevel2 = Seq.tabulate(2) { i =>
+-    vdotSumLevel1(2 * i) +& vdotSumLevel1(2 * i + 1)
++  private val operands = vdotProducts.map { p =>
++    val bits = p.asUInt
++    Cat(Fill(vdotWidth - p.getWidth, bits(p.getWidth - 1)), bits)
+   }
+ 
+-  private val vdotSum = vdotSumLevel2(0) +& vdotSumLevel2(1)
++  private def reduce4(x: Seq[UInt]): UInt = {
++    val (s0, c0) = csa3(x(0), x(1), x(2))
++    val (s1, c1) = csa3(s0, c0, x(3))
++    (s1 + c1)(vdotWidth - 1, 0)
++  }
+ 
++  private val group0 = reduce4(operands.take(4))
++  private val group1 = reduce4(operands.drop(4))
++  private val vdotSum = (group0 + group1)(vdotWidth - 1, 0).asSInt
+   private val vdotSum32 = Wire(SInt(32.W))
+   vdotSum32 := vdotSum
++  private val vdotResult = Cat(0.U((dataWidth - 32).W), vdotSum32.asUInt)
+ 
+-  private val vdotResult =
+-    Cat(0.U((dataWidth - 32).W), vdotSum32.asUInt)
++  // Sparse mode emits two independent signed 32-bit partial sums.
++  private val sparseGroup0 = Cat(Fill(32 - vdotWidth, group0(vdotWidth - 1)), group0)
++  private val sparseGroup1 = Cat(Fill(32 - vdotWidth, group1(vdotWidth - 1)), group1)
++  private val sparseResult = Cat(0.U((dataWidth - 64).W), sparseGroup1, sparseGroup0)
+ 
+-  // VIAluFix is configured as a one-cycle pipelined functional unit.
+   private val outIsVdot = RegEnable(isVdot, io.in.valid)
++  private val outIsSparseVdot = RegEnable(isSparseVdot, io.in.valid)
+   private val outVdotResult = RegEnable(vdotResult, io.in.valid)
++  private val outSparseResult = RegEnable(sparseResult, io.in.valid)
++  private val outSparseInvalidMask = RegEnable(sparseInvalidMask, io.in.valid)
+ 
+   // Extension instructions
+   private val vf2 = isVextF2
+@@ -392,23 +442,28 @@ class VIAluFix(cfg: FuConfig)(implicit p: Parameters) extends VecPipedFuncUnit(c
+   private val normalResult =
+     Mux(dstMask, mgtu.io.out.vd, mgu.io.out.vd)
+ 
+-  private val vdotIllegal =
+-    outIsVdot && (
+-      outVecCtrl.vsew =/= VSew.e8 ||
+-      outVecCtrl.vlmul =/= 0.U
+-    )
++  // Preserve original dense VDOT illegal behavior; sparse mode additionally
++  // requires VL=8, vstart=0 and four valid 2:4 metadata nibbles.
++  private val vdotIllegal = outIsVdot && (
++    outVecCtrl.vsew =/= VSew.e8 || outVecCtrl.vlmul =/= 0.U
++  )
++  private val sparseIllegal = outIsSparseVdot && (
++    outVecCtrl.vsew =/= VSew.e8 || outVecCtrl.vlmul =/= 0.U ||
++    outVl =/= 8.U || outVstart =/= 0.U || outSparseInvalidMask
++  )
+ 
+   io.out.bits.res.data :=
+-    Mux(outVstartGeVl, outOldVd,
+-      Mux(outIsVdot, outVdotResult, normalResult))
++    Mux(outIsSparseVdot, outSparseResult,
++      Mux(outVstartGeVl, outOldVd,
++        Mux(outIsVdot, outVdotResult, normalResult)))
+ 
+   io.out.bits.res.vxsat.get :=
+-    Mux(outIsVdot, false.B,
++    Mux(outIsVdot || outIsSparseVdot, false.B,
+       Mux(outVstartGeVl, false.B,
+         (outVxsatReal & mgu.io.out.active).orR))
+ 
+   io.out.bits.ctrl.exceptionVec.get(ExceptionNO.illegalInstr) :=
+-    (mgu.io.out.illegal || vdotIllegal) && !outVstartGeVl
++    ((mgu.io.out.illegal || vdotIllegal) && !outVstartGeVl) || sparseIllegal
+ 
+   // util function
+   def splitMask(maskIn: UInt, sew: SewOH): Vec[UInt] = {

@@ -1,0 +1,5 @@
+PAIRACC — XiangShan + NEMU, 32 images, 5 measured rounds
+Specialized: 19,387 cycles
+Pairwise Layer0: 19,308 cycles
+Cycle reduction: +0.41%
+Winner: pairacc
