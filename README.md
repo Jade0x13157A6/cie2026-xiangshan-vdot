@@ -1,5 +1,37 @@
 # 2026 CIE 全国 RISC-V 高水平创新及应用大赛——香山昆明湖 V2 自定义 VDOT 指令
 
+## 当前参赛版本：S24 2:4 Sparse VDOT
+
+在前期 **Dense VDOT / Hybrid CSA** 实验基础上，最新版本增加了 **2:4 structured-sparse INT8 VDOT**。以下章节保留之前 Dense VDOT 的设计及综合数据，不能将其性能结果当作 S24 的最终成绩。
+
+- **硬件实现：** [五个模块的 S24 补丁及固定 Git 版本](patches/s24/)
+- **补丁应用：** [scripts/apply-s24-patches.sh](scripts/apply-s24-patches.sh)
+- **最终软件：** [PairAcc 完整 INT8 MLP](software/VDOT_Real_INT8_PAIRACC/)
+- **实测性能：** 32 张图像、两层 64→32→10 INT8 MLP，PairAcc **19,308 cycles**，Specialized **19,387 cycles**（同一轮 A/B；3 轮预热、5 轮测量）
+- **正确性：** 32/32 Python INT8 参考预测一致；31/32 分类正确；XiangShan + NEMU Difftest PASS、GOOD TRAP。
+- **测试证据：** [PairAcc 日志与摘要](results/vdot-s24/real-int8-pairacc/)。这是完整测试 MLP 的周期数，**不是 LLM 推理速度**；历史 RVV 测试不应与本次 PairAcc 作为同轮公平加速比。
+
+### S24 复现入口（与旧版 Dense VDOT 区分）
+
+`versions.env` 和 `scripts/apply-patches.sh` 是**旧版 Dense/Hybrid** 的复现入口，**不能用于 S24**。在具有相同 `xs-env` 版本及其子仓库基础 commit 的工作区中，从项目根目录执行：
+
+```bash
+bash cie2026-jade-vdot/scripts/apply-s24-patches.sh "$(pwd)/xs-env"
+```
+
+该脚本先检查 SHA256、`xs-env` 和五个子仓库的固定版本，确认全部补丁可以应用或已经应用，再修改工作区。执行前应确保上游源码已检出并初始化子模块；**此脚本不负责 checkout、克隆、构建处理器或重建 NEMU**。
+
+完成必要的 XiangShan/NEMU 构建后，使用 `xs-env` 的 Nix 开发环境运行最终软件：
+
+```bash
+cd xs-env
+nix develop -c bash ../cie2026-jade-vdot/software/VDOT_Real_INT8_PAIRACC/run.sh
+```
+
+此脚本会编译 PairAcc 软件并运行已有的 XiangShan 仿真器及 NEMU；如处理器或 NEMU 尚未编译，需要先按既有构建流程重建它们。原始 S24 硬件补丁已经在记录的基础 commit 上通过应用检查，**不等于已在全新工作区完成端到端复现**。
+
+---
+
 ## 项目概述
 
 本项目面向边缘 AI 中的 INT8 点积计算，在香山（XiangShan）昆明湖 V2 处理器的向量整数执行单元中实现自定义 `vdot.vv` 指令，并完成指令译码、硬件执行、NEMU 参考模型、差分验证及性能评估。在基础实现之上，对五种乘积归约网络进行同条件综合比较，最终选择 **Hybrid Carry-Save Adder（CSA）** 结构。
