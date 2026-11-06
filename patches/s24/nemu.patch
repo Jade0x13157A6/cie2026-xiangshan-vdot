@@ -1,0 +1,77 @@
+diff --git a/src/isa/riscv64/instr/rvv/decode.h b/src/isa/riscv64/instr/rvv/decode.h
+index 421479e9..13a085f5 100644
+--- a/src/isa/riscv64/instr/rvv/decode.h
++++ b/src/isa/riscv64/instr/rvv/decode.h
+@@ -205,6 +205,7 @@ def_THelper(vopivv) {
+   def_INSTR_TAB("010100 ? ????? ????? ??? ????? ????? ??", vror);
+   def_INSTR_TAB("110101 ? ????? ????? ??? ????? ????? ??", vwsll);
+   
++  def_INSTR_TAB("111010 1 ????? ????? ??? ????? ????? ??", vdot);
+   return EXEC_ID_inv;
+ }
+ 
+diff --git a/src/isa/riscv64/instr/rvv/vcompute.h b/src/isa/riscv64/instr/rvv/vcompute.h
+index 46a20387..749ed9ca 100644
+--- a/src/isa/riscv64/instr/rvv/vcompute.h
++++ b/src/isa/riscv64/instr/rvv/vcompute.h
+@@ -266,6 +266,60 @@ def_EHelper(vdotu) {
+ }
+ 
+ def_EHelper(vdot) {
++  /* Separate 2:4 sparse encoding: funct6=111010, vm=1, funct3=000. */
++  if (((s->isa.instr.val >> 25) & 0x7fU) == 0x75U) {
++    if (s->src_vmode != SRC_VV || s->vm != 1 ||
++        vtype->vsew != 0 || vtype->vlmul != 0 ||
++        vl->val != 8 || vstart->val != 0) {
++      longjmp_exception(EX_II);
++    }
++
++    int8_t activations[8];
++    int8_t packed_weights[8];
++    uint8_t metadata_bytes[2];
++    uint32_t outputs[2] = {0, 0};
++
++    /* Snapshot both sources before writing vd; allow register overlap. */
++    for (int i = 0; i < 8; ++i) {
++      rtlreg_t a = 0, w = 0;
++      get_vreg(id_src1->reg, i, &a, 0, 0, 1, 1);
++      get_vreg(id_src2->reg, i, &w, 0, 0, 1, 1);
++      activations[i] = (int8_t)(uint8_t)a;
++      packed_weights[i] = (int8_t)(uint8_t)w;
++    }
++    for (int i = 0; i < 2; ++i) {
++      rtlreg_t meta = 0;
++      get_vreg(id_src2->reg, 8 + i, &meta, 0, 0, 1, 1);
++      metadata_bytes[i] = (uint8_t)meta;
++    }
++    uint16_t metadata = (uint16_t)metadata_bytes[0] |
++                        ((uint16_t)metadata_bytes[1] << 8);
++    for (int group = 0; group < 4; ++group) {
++      uint8_t mask = (metadata >> (4 * group)) & 0xfU;
++      if (__builtin_popcount((unsigned)mask) != 2) longjmp_exception(EX_II);
++      int32_t sum = 0;
++      int weight_idx = group * 2;
++      int base = (group % 2) * 4;
++      int kept = 0;
++      for (int bit = 0; bit < 4; ++bit) {
++        if ((mask >> bit) & 1U) {
++          sum += (int32_t)activations[base + bit] *
++                 (int32_t)packed_weights[weight_idx + kept];
++          ++kept;
++        }
++      }
++      outputs[group / 2] += (uint32_t)sum;
++    }
++    for (int i = 0; i < 16; ++i) {
++      rtlreg_t byte = 0;
++      if (i < 8) byte = (outputs[i / 4] >> (8 * (i % 4))) & 0xffU;
++      set_vreg(id_dest->reg, i, byte, 0, 0, 1);
++    }
++    rtl_li(s, s0, 0);
++    vcsr_write(IDXVSTART, s0);
++    vp_set_dirty();
++    return;
++  }
+   /*
+    * Custom signed int8 dot product:
+    *   result = sum(vs2[i] * vs1[i]), i = 0..7
