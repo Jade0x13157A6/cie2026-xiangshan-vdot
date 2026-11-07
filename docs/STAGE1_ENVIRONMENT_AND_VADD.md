@@ -62,7 +62,7 @@ xs-env/XiangShan/build/emu \
   2>&1 | tee cie2026-jade-vdot/results/stage1/hello-xiangshan.log
 ```
 
-**已核查的证据：** `results/stage1/hello-xiangshan.log` 包含 Hello XiangShan 的问候输出、`Difftest enabled` 和 `HIT GOOD TRAP`；这是已保存日志的核查结果。
+**运行日志：** `results/stage1/hello-xiangshan.log` 包含 Hello XiangShan 的问候输出、`Difftest enabled` 和 `HIT GOOD TRAP`；这是已保存日志的核查结果。
 
 ## 3. VADD.VV 波形验证
 
@@ -120,7 +120,7 @@ TOP/SimTop/l_soc/core_with_l2/core/backend/inner_vfExuBlock/exus_2/VialuFix
 
 上述时间戳之差仅是**仿真波形记录中的时间间隔**，不能单独作为物理门延迟或可靠的指令延迟测量。波形用于展示向量 ALU 内有效输入和结果的顺序关系；端到端功能正确性另由向量存储/回读测试及 Difftest 通过结果佐证。
 
-### 证据文件
+### 测试记录
 
 - `results/waveforms/vadd_execution.png`：GTKWave 中的输入/输出波形截图。
 - `results/vadd-wave-full.log`：VADD 波形仿真日志。

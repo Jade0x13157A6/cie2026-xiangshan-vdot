@@ -4,13 +4,4 @@
 
 同轮测试采用 3 次预热、5 轮测量；Specialized 为 **19,387 cycles**，PairAcc 为 **19,308 cycles**。输出与 Python INT8 参考模型 32/32 一致。
 
-## 运行
-
-在包含 `xs-env` 和 `cie2026-jade-vdot` 的工作区执行：
-
-```bash
-cd xs-env
-nix develop -c bash ../cie2026-jade-vdot/software/VDOT_Real_INT8_PAIRACC/run.sh
-```
-
-运行前需完成硬件补丁应用并构建 XiangShan 仿真器及 NEMU。`run.sh` 负责构建应用和执行 Difftest；可通过 `VDOT_WORKSPACE` 设置工作区路径。
+构建与运行步骤统一见[根目录 README 的「复现方法」](../../README.md#复现方法)。
