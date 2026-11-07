@@ -1,13 +1,13 @@
-# 功能验证与性能评估结果
+# Dense VDOT 结构探索与微基准实验结果
 
-**最新 S24 版本的评估数据**（含 Nangate45 标准单元面积、FastSel 比较、STA 原始日志、PairAcc INT8 MLP）请见 [S24_PPA.md](S24_PPA.md) 与 [S24.md](S24.md)。下文记录的是更早的 Dense/Hybrid CSA 结果，不能用作 S24 的最终 PPA。
+本文件保留项目开发中 **Dense VDOT 的架构比较、功能验证和点积微基准数据**。参赛工程的 2:4 Sparse VDOT 硬件、PairAcc 应用与 Nangate45 面积/STA 结果见 [`S24.md`](S24.md) 和 [`S24_PPA.md`](S24_PPA.md)。不同测试对象和负载的数据不可直接混用。
 
 
 ## 1. 测试平台
 
 测试平台为香山（XiangShan）昆明湖 V2（`KunminghuV2Config`），使用 Verilator 5.048、修改后的 NEMU 参考模型及 RV64GCV 应用测试程序。RTL 与 NEMU 通过差分测试（Difftest）协同运行。
 
-## 2. 第一阶段——向量加法波形验证
+## 2. 向量加法波形验证
 
 专用 `vadd.vv v3, v1, v2` 测试程序在 PC `0x80000168` 处执行指令编码 `0x021101d7`。测试验证了 8 个有效 INT8 元素，输出 `vadd.vv PASS: 8 lanes`；RTL–NEMU 仿真以 `HIT GOOD TRAP` 结束。
 
@@ -29,13 +29,13 @@
 
 输出对应 `[1,2,3,4,5,6,7,8]` 与 `[8,7,6,5,4,3,2,1]` 的逐元素加法。上述时间戳仅表示**仿真波形采样时间**，不是物理门延迟，也不能单独证明指令在架构层面的提交时序。该波形直接展示的是功能单元计算结果。
 
-## 3. 第二阶段——自定义 VDOT 功能验证
+## 3. Dense VDOT 功能验证
 
-最终自定义指令 `vdot.vv` 对 8 组有符号 INT8 数据执行乘法，并通过 Hybrid CSA 归约网络得到有符号 32-bit 点积结果。
+Dense 指令 `vdot.vv` 对 8 组有符号 INT8 数据执行乘法，并通过 Hybrid CSA 归约网络得到有符号 32-bit 点积结果。
 
 RTL–NEMU Difftest 共 **76/76** 组通过，包括：4 组定向测试（正值、负值、最大值、最小值）、8 组数据通道映射测试，以及 64 组固定随机种子 `0x013157a6` 的随机测试。原始验证日志见 `results/validation-difftest.log`。
 
-## 4. 第三阶段——标准 RVV 基线与性能比较
+## 4. Dense VDOT 与标准 RVV 的点积微基准
 
 标准 RVV 基线使用 `vle8.v`、`vwmul.vv`、`vwredsum.vs` 和 `vmv.x.s`。自定义 VDOT 路径包含两次向量加载、`vdot.vv`，并在 `SEW=32` 配置下使用 `vmv.x.s` 提取其 **32-bit** 结果。两种路径计时均包含向量配置、加载和结果提取。
 
@@ -58,14 +58,14 @@ Benchmark 配置为每轮计时执行 1,000 次点积，共运行 5 轮；测量
 
 **标准 RVV 与自定义 VDOT 的点积内核加速比为 13,349 / 9,015 = 1.480×**，相当于所测周期数减少约 32.5%。这是**点积内核微基准测试**结果，不代表单条指令延迟，也不是完整 LLM 推理的 tokens/s 指标。原始日志见 `results/benchmark-rvv-difftest.log`。
 
-## 5. 测量范围与限制
+## 5. 本组 Dense 微基准的测量限制
 
 - 当前指令固定为 `SEW=8`、`LMUL=1`、`VL=8` 的无掩码点积。
 - 未进行完整 LLM 推理吞吐量测试，因此不作端到端 LLM 加速声明。
-- 未完成 ASIC PPA 测量。现有 Yosys Generic Cells 统计是包含 VDOT 的整个 `VIAluFix` 模块规模，并不是独立 VDOT 电路相对于未修改模块的面积增量。
+- 本组 Dense 结构对比使用技术无关 Yosys Generic Cells，不能当成 ASIC 物理面积。参赛硬件另有 Nangate45 标准单元映射与 STA 结果，见 [`S24_PPA.md`](S24_PPA.md)。
 - 仿真波形与功能测试通过，不能代替全面的微架构时序签核。
 
-## 6. 最终 Hybrid 架构与验证
+## 6. Dense 归约结构：Hybrid CSA 实验
 
 从香山 `VIAluFix` 的 Chisel 实现生成五种归约结构，并在同一技术无关 Yosys 流程下进行综合（`read_slang`、`synth -flatten`、`stat`、`ltp -noff`）。Generic Cells 统计对象是**整个 `VIAluFix` 模块**，既不是 VDOT 独立电路面积，也不是 ASIC 物理面积。VDOT 逻辑深度是**拓扑门级数**，不等于实际传播延迟。
 
@@ -77,11 +77,11 @@ Benchmark 配置为每轮计时执行 1,000 次点积，共运行 5 轮；测量
 | **Hybrid CSA** | **47,672** | **−0.83%** | **47** | **100,005 PASS** |
 | Fused Booth + CSA | 47,786 | −0.59% | 56 | 100,005 PASS |
 
-最终选择 Hybrid CSA：将 8 个乘积分为两组，每组 4 个乘积。每组经两级 3:2 CSA 压缩，再由普通加法器求和；两组结果进入最终加法器。该结构**不改变指令语义或原有单周期流水功能单元接口**。
+在该组 Dense 结构实验中选择 Hybrid CSA：将 8 个乘积分为两组，每组 4 个乘积。每组经两级 3:2 CSA 压缩，再由普通加法器求和；两组结果进入最终加法器。该结构**不改变指令语义或原有单周期流水功能单元接口**。
 
-**Hybrid 整机功能验证：** 重新生成包含 Hybrid 的完整处理器 RTL 并重新构建 Verilator 仿真器后，RTL–NEMU Difftest 全部 **76/76** 组通过，程序以 `HIT GOOD TRAP` 结束。使用实际生成 RTL 的独立测试平台完成 **100,005** 组测试。整机日志见 `results/hybrid/validation-difftest.log`。
+**Dense/Hybrid 整机功能验证：** 重新生成包含 Hybrid 的完整处理器 RTL 并重新构建 Verilator 仿真器后，RTL–NEMU Difftest 全部 **76/76** 组通过，程序以 `HIT GOOD TRAP` 结束。使用实际生成 RTL 的独立测试平台完成 **100,005** 组测试。整机日志见 `results/hybrid/validation-difftest.log`。
 
-**Hybrid 性能复测：** 在重新构建的 Hybrid 整机仿真器上运行 NEMU Difftest，五轮测量取最佳值，结果与此前的实现一致：
+**Dense/Hybrid 性能复测：** 在重新构建的 Hybrid 整机仿真器上运行 NEMU Difftest，五轮测量取最佳值，结果与此前的实现一致：
 
 | 实现 | 每 1,000 次点积总周期 | 每次点积周期 |
 |---|---:|---:|

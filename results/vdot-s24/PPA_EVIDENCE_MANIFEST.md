@@ -1,9 +1,8 @@
-# S24 PPA evidence manifest
+# 2:4 稀疏 VDOT 综合与时序证据清单
 
-This manifest lists the original artifacts selected from the tested local workspace.
-SHA-256 values cover the exact committed file bytes.
+本清单列出从实际测试工作区归档的综合、面积和 STA 原始证据。SHA256 针对仓库提交的文件字节计算，用于核对证据的完整性。
 
-| Evidence file | Size (bytes) | SHA-256 |
+| 证据文件 | 字节数 | SHA-256 |
 |---|---:|---|
 | [`summary.txt`](ppa-generic/summary.txt) | 600 | `0dce8f268d55a856197c48b3779b2c51a6f0192c98910eec47eb010018d83207` |
 | [`summary.json`](ppa-generic/summary.json) | 255 | `fab385a567d6b2241577c4f1ac7b8800df4352170237af767ee7bd03967b1b14` |
@@ -23,9 +22,9 @@ SHA-256 values cover the exact committed file bytes.
 | [`pre-fastsel.vdot-tagged.sta.log`](chisel-fastsel-ppa/nangate45/pre-fastsel.vdot-tagged.sta.log) | 6,369 | `cd33af93873d1d0b417e4300ced60f6d27fba93febc7c4cdd644e3275140b3a3` |
 | [`pre-fastsel.vdot.sta.log`](chisel-fastsel-ppa/nangate45/pre-fastsel.vdot.sta.log) | 20,968 | `1c72c5ec750a6acf3ac51b701df812ee3b942bd1322326373e1eef30ae624633` |
 
-## Not included
+## 未纳入仓库的中间产物
 
-Large or unavailable artifacts remain outside this compact evidence set.
-- `results/vdot-s24/chisel-fastsel-ppa/nangate45/fastsel.mapped.json` — large (19,614,199 bytes)
-- `results/vdot-s24/chisel-fastsel-ppa/nangate45/pre-fastsel.mapped.json` — large (19,657,028 bytes)
-- `results/vdot-s24/chisel-fastsel-ppa/nangate45/sparse-off.mapped.json` — large (19,339,168 bytes)
+以下大型综合中间文件保留在本地实验工作区，不属于轻量化证据归档；这不影响已上传的摘要、STA 日志和 SHA256 清单。
+- `results/vdot-s24/chisel-fastsel-ppa/nangate45/fastsel.mapped.json` — 本地中间文件（19,614,199 字节）
+- `results/vdot-s24/chisel-fastsel-ppa/nangate45/pre-fastsel.mapped.json` — 本地中间文件（19,657,028 字节）
+- `results/vdot-s24/chisel-fastsel-ppa/nangate45/sparse-off.mapped.json` — 本地中间文件（19,339,168 字节）

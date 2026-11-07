@@ -2,7 +2,7 @@
 
 ## 实验定位
 
-该目录归档的是**第五种候选结构 Fused Booth + CSA** 的独立实验资料，**不是正式提交的 Hybrid CSA RTL 版本**。最终提交使用仓库根目录 `patches/03-xiangshan-vdot.patch` 中的 Hybrid CSA 数据通路。
+该目录归档的是**第五种候选结构 Fused Booth + CSA** 的独立实验资料，**不是参赛工程的独立实现**。本目录用于说明 Dense 归约结构的探索过程；实际参赛 RTL 以 [`patches/s24/xiangshan.patch`](../../patches/s24/xiangshan.patch) 为准。
 
 原始 `vdot_fused_experiment.sh` 通过 radix-4 Booth 编码生成 8 个有符号 INT8 乘积的部分积行，再利用公共 19 位 CSA 压缩网络完成点积；生成独立 `VIAluFix` RTL 后运行 100,005 组测试，并以统一的 Yosys 流程比较逻辑单元数与拓扑深度。
 
@@ -32,7 +32,7 @@
 | Hybrid CSA | 47672 | 47 |
 | Fused Booth + CSA | 47786 | 56 |
 
-**解释范围：** Generic Cells 是技术无关 Yosys 综合后的整个 `VIAluFix` 模块单元数，**不是仅 VDOT 的新增面积，更不是 ASIC 物理面积**；逻辑深度是拓扑级数，不是传播延迟。此实验只比较候选结构，最终 Hybrid 的整机 Difftest 与性能结果以仓库 `results/hybrid/` 和 `docs/RESULTS.md` 为准。
+**解释范围：** Generic Cells 是技术无关 Yosys 综合后的整个 `VIAluFix` 模块单元数，**不是仅 VDOT 的新增面积，更不是 ASIC 物理面积**；逻辑深度是拓扑级数，不是传播延迟。此实验只比较 Dense 归约候选结构；相关整机 Difftest 与微基准见 `results/hybrid/` 和 `docs/RESULTS.md`。参赛工程的稀疏指令与标准单元评估见 `docs/S24.md`、`docs/S24_PPA.md`。
 
 ## 原始实验命令与局限
 
