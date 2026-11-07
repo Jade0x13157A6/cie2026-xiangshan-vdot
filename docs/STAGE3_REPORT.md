@@ -51,6 +51,8 @@ Baseline 与自定义指令的四种输入均得到一致结果：`120`、`−12
 
 原始测试日志：[benchmark-rvv-difftest.log](../results/benchmark-rvv-difftest.log)、[Hybrid 复测](../results/hybrid/benchmark-rvv-difftest.log)；分析细节见 [Dense 微基准报告](RESULTS.md)。
 
+![RVV Baseline 与自定义 VDOT 的性能基准输出](../results/stage3/rvv_vdot_benchmark.png)
+
 ## 3.4 稀疏计算的应用验证
 
 工程在 Dense VDOT 之外实现了共享乘法器的 2:4 稀疏 VDOT，并用于 **64→32→10 的 INT8 MLP**，共测试 32 个样本。32/32 结果与 Python INT8 参考预测一致，31/32 分类正确，Difftest 正常结束。比较同一轮应用的两种累加方法：

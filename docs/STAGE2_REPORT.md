@@ -53,6 +53,8 @@ FastSel 使用掩码位直接生成激活值选择信号，避免先计算二进
 
 针对全零输入，独立程序 [`software/vdot-zero/`](../software/vdot-zero/) 分别测试全零左操作数和全零右操作数。**两组均通过（2/2 PASS）**；XiangShan–NEMU Difftest 已启用，仿真以 `HIT GOOD TRAP` 结束。运行日志：[zero-difftest.log](../results/stage2/zero-difftest.log)。全零测试独立于上述 76 组回归测试。
 
+![VDOT 功能测试与全零边界测试输出](../results/stage2/vdot_functional_tests.png)
+
 ### 其他测试
 
 Dense 归约结构的独立 RTL 回归完成 **100,005** 组测试；2:4 稀疏运算在 INT8 MLP 应用中取得 **32/32** 参考预测一致结果。详见 [结构比较](RESULTS.md) 与 [应用性能](STAGE3_REPORT.md)。

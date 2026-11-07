@@ -16,6 +16,8 @@ Core 0: HIT GOOD TRAP
 
 IP 地址是 Hello 程序中的测试标识。仿真启用了 RTL–NEMU Difftest，并正常结束。运行日志：[hello-xiangshan.log](../results/stage1/hello-xiangshan.log)。程序源文件归档在 `source/nexus-am/apps/hello-jade/`。
 
+![Hello XiangShan 仿真运行输出](../results/stage1/hello_xiangshan.png)
+
 ## 1.2 开发环境与操作记录
 
 开发环境通过 `xs-env` 和 Nix 统一管理，构建 XiangShan Verilator 仿真器、NEMU 参考模型及 `nexus-am` 测试程序。测试程序在 RTL–NEMU Difftest 模式下运行；VADD 同时采集执行单元全波形，用于分析操作数、控制信号和计算结果。
