@@ -2,7 +2,7 @@
 
 ## 三阶段提交材料
 
-按照大赛评审规则，阶段报告分别为 [环境与 VADD](docs/STAGE1_REPORT.md)、[指令设计与基础测试](docs/STAGE2_REPORT.md)、[NEMU、Baseline 与加速分析](docs/STAGE3_REPORT.md)。官网文档和视频的对应关系见 [提交索引](submission/PORTAL_UPLOAD.md)。
+按照大赛评审规则，阶段报告分别为 [环境与 VADD](docs/STAGE1_REPORT.md)、[指令设计与基础测试](docs/STAGE2_REPORT.md)、[NEMU、Baseline 与加速分析](docs/STAGE3_REPORT.md)。
 
 
 ## 项目简介
