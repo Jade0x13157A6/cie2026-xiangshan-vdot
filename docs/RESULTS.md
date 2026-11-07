@@ -1,6 +1,6 @@
 # Dense VDOT 结构探索与微基准实验结果
 
-本文件保留项目开发中 **Dense VDOT 的架构比较、功能验证和点积微基准数据**。参赛工程的 2:4 Sparse VDOT 硬件、PairAcc 应用与 Nangate45 面积/STA 结果见 [`S24.md`](S24.md) 和 [`S24_PPA.md`](S24_PPA.md)。不同测试对象和负载的数据不可直接混用。
+本文件记录 Dense VDOT 的结构比较与点积微基准。稀疏指令及标准单元评估见 [`S24.md`](S24.md)、[`S24_PPA.md`](S24_PPA.md)。
 
 
 ## 1. 测试平台

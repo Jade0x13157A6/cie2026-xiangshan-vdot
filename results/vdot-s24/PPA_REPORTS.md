@@ -1,8 +1,8 @@
-# 2:4 稀疏 VDOT 综合与时序证据清单
+# 综合日志索引
 
-本清单列出从实际测试工作区归档的综合、面积和 STA 原始证据。SHA256 针对仓库提交的文件字节计算，用于核对证据的完整性。
+综合与 STA 日志及对应 SHA256 校验值：
 
-| 证据文件 | 字节数 | SHA-256 |
+| 文件 | 字节数 | SHA-256 |
 |---|---:|---|
 | [`summary.txt`](ppa-generic/summary.txt) | 600 | `0dce8f268d55a856197c48b3779b2c51a6f0192c98910eec47eb010018d83207` |
 | [`summary.json`](ppa-generic/summary.json) | 255 | `fab385a567d6b2241577c4f1ac7b8800df4352170237af767ee7bd03967b1b14` |
@@ -24,7 +24,7 @@
 
 ## 未纳入仓库的中间产物
 
-以下大型综合中间文件保留在本地实验工作区，不属于轻量化证据归档；这不影响已上传的摘要、STA 日志和 SHA256 清单。
+以下映射中间产物保留在本地，仓库仅提供综合摘要和 STA 日志。
 - `results/vdot-s24/chisel-fastsel-ppa/nangate45/fastsel.mapped.json` — 本地中间文件（19,614,199 字节）
 - `results/vdot-s24/chisel-fastsel-ppa/nangate45/pre-fastsel.mapped.json` — 本地中间文件（19,657,028 字节）
 - `results/vdot-s24/chisel-fastsel-ppa/nangate45/sparse-off.mapped.json` — 本地中间文件（19,339,168 字节）

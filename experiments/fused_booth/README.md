@@ -2,7 +2,7 @@
 
 ## 实验定位
 
-该目录归档的是**第五种候选结构 Fused Booth + CSA** 的独立实验资料，**不是参赛工程的独立实现**。本目录用于说明 Dense 归约结构的探索过程；实际参赛 RTL 以 [`patches/s24/xiangshan.patch`](../../patches/s24/xiangshan.patch) 为准。
+本目录记录 Dense VDOT 的 Fused Booth + CSA 归约结构实验。参赛硬件实现见 [`patches/s24/xiangshan.patch`](../../patches/s24/xiangshan.patch)。
 
 原始 `vdot_fused_experiment.sh` 通过 radix-4 Booth 编码生成 8 个有符号 INT8 乘积的部分积行，再利用公共 19 位 CSA 压缩网络完成点积；生成独立 `VIAluFix` RTL 后运行 100,005 组测试，并以统一的 Yosys 流程比较逻辑单元数与拓扑深度。
 
@@ -22,7 +22,7 @@
 
 ## 综合比较
 
-下表优先从本次实际归档的 Yosys 日志解析；未找到原始日志时不填入 README 中已有的数字。
+五种归约结构的技术无关 Yosys 综合结果：
 
 | 结构 | `VIAluFix` 整模块 Generic Cells | VDOT 逻辑拓扑深度 |
 |---|---:|---:|
@@ -32,7 +32,7 @@
 | Hybrid CSA | 47672 | 47 |
 | Fused Booth + CSA | 47786 | 56 |
 
-**解释范围：** Generic Cells 是技术无关 Yosys 综合后的整个 `VIAluFix` 模块单元数，**不是仅 VDOT 的新增面积，更不是 ASIC 物理面积**；逻辑深度是拓扑级数，不是传播延迟。此实验只比较 Dense 归约候选结构；相关整机 Difftest 与微基准见 `results/hybrid/` 和 `docs/RESULTS.md`。参赛工程的稀疏指令与标准单元评估见 `docs/S24.md`、`docs/S24_PPA.md`。
+Generic Cells 统计整个 `VIAluFix` 的技术无关逻辑单元；深度为拓扑级数。Dense 基准见 [`docs/RESULTS.md`](../../docs/RESULTS.md)，标准单元映射见 [`docs/S24_PPA.md`](../../docs/S24_PPA.md)。
 
 ## 原始实验命令与局限
 
@@ -45,10 +45,3 @@ bash experiments/fused_booth/vdot_fused_experiment.sh
 ```
 
 归档脚本不会运行该命令，也不会编辑任何 `xs-env` 下的文件。本目录不包括体积较大的、可从 Chisel 重新生成的 Verilog/FIRRTL 中间产物。
-
-### 没有找到的可选原始文件
-
-- `inputs/VIAluFix_balanced.scala`
-- `inputs/VIAluFix_csa.scala`
-
-如果这里列出日志，说明其原件本次未从本地工作区找到；这不代表测试未发生，但不能把未找到的文件说成已经归档。

@@ -2,7 +2,7 @@
 
 ## 1. 设计目标
 
-本文件记录设计过程中对 Dense VDOT 八组有符号 INT8 点积及 Hybrid CSA 归约结构的研究。**参赛工程同时支持 Dense 和 2:4 Sparse VDOT，其实际硬件实现请参阅 [`S24.md`](S24.md)；本文件不代表独立的提交版本。**
+本文件介绍 Dense VDOT 的运算定义及 Hybrid CSA 归约实验。稀疏运算见 [`S24.md`](S24.md)。
 
 ## 2. 指令语义
 
