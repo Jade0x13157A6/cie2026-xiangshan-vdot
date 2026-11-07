@@ -21,10 +21,3 @@
 | [`fastsel.vdot-tagged.sta.log`](chisel-fastsel-ppa/nangate45/fastsel.vdot-tagged.sta.log) | 6,193 | `4bccfa02ebd2b1292ac1c42524a785b593d52b01cae6183acbbe2519e8e7ac30` |
 | [`pre-fastsel.vdot-tagged.sta.log`](chisel-fastsel-ppa/nangate45/pre-fastsel.vdot-tagged.sta.log) | 6,369 | `cd33af93873d1d0b417e4300ced60f6d27fba93febc7c4cdd644e3275140b3a3` |
 | [`pre-fastsel.vdot.sta.log`](chisel-fastsel-ppa/nangate45/pre-fastsel.vdot.sta.log) | 20,968 | `1c72c5ec750a6acf3ac51b701df812ee3b942bd1322326373e1eef30ae624633` |
-
-## 未纳入仓库的中间产物
-
-以下映射中间产物保留在本地，仓库仅提供综合摘要和 STA 日志。
-- `results/vdot-s24/chisel-fastsel-ppa/nangate45/fastsel.mapped.json` — 本地中间文件（19,614,199 字节）
-- `results/vdot-s24/chisel-fastsel-ppa/nangate45/pre-fastsel.mapped.json` — 本地中间文件（19,657,028 字节）
-- `results/vdot-s24/chisel-fastsel-ppa/nangate45/sparse-off.mapped.json` — 本地中间文件（19,339,168 字节）

@@ -12,7 +12,7 @@
 | FastSel 优化前 | 38,789 | 49,517.496 | +1.915% |
 | **FastSel** | **38,724** | **49,354.172** | **+1.579%** |
 
-FastSel 相对优化前减少 **163.324 μm²（0.330%）** 映射面积。原始统计：[Nangate45 综合摘要](../results/vdot-s24/chisel-fastsel-ppa/nangate45/summary.txt)。
+FastSel 相对优化前减少 **163.324 μm²（0.330%）** 映射面积。综合结果：[Nangate45 综合摘要](../results/vdot-s24/chisel-fastsel-ppa/nangate45/summary.txt)。
 
 ## 3. 逻辑规模与时序
 
@@ -23,7 +23,7 @@ FastSel 相对优化前减少 **163.324 μm²（0.330%）** 映射面积。原�
 | FastSel 优化前 | 4,389 | 56 |
 | FastSel | 4,409 | 50 |
 
-FastSel 的最长拓扑路径减少 **6 级（10.7%）**，但拓扑级数不能直接换算为传播延迟。原始记录：[逻辑综合摘要](../results/vdot-s24/ppa-fastsel/summary.txt)。
+FastSel 的最长拓扑路径减少 **6 级（10.7%）**，但拓扑级数不能直接换算为传播延迟。综合数据：[逻辑综合摘要](../results/vdot-s24/ppa-fastsel/summary.txt)。
 
 完整 `VIAluFix` 在 **10 ns 理想时钟约束**下的 STA：
 
@@ -35,8 +35,8 @@ FastSel 的最长拓扑路径减少 **6 级（10.7%）**，但拓扑级数不能
 
 三种配置在该约束下均报告正 Slack。FastSel 相比优化前的最差 Slack 减少 **0.28 ns**，因此不能将其逻辑级数改善解读为整个模块的时序改善。
 
-原始 STA 日志：[禁用稀疏](../results/vdot-s24/chisel-fastsel-ppa/nangate45/sparse-off.sta.log) · [优化前](../results/vdot-s24/chisel-fastsel-ppa/nangate45/pre-fastsel.sta.log) · [FastSel](../results/vdot-s24/chisel-fastsel-ppa/nangate45/fastsel.sta.log)。文件校验值见[综合日志索引](../results/vdot-s24/PPA_REPORTS.md)。
+STA 报告：[禁用稀疏](../results/vdot-s24/chisel-fastsel-ppa/nangate45/sparse-off.sta.log) · [优化前](../results/vdot-s24/chisel-fastsel-ppa/nangate45/pre-fastsel.sta.log) · [FastSel](../results/vdot-s24/chisel-fastsel-ppa/nangate45/fastsel.sta.log)。文件校验值见[综合日志索引](../results/vdot-s24/PPA_REPORTS.md)。
 
 ## 4. 评估范围
 
-面积为 Liberty 映射后的标准单元面积，STA 使用理想时钟、无布线寄生参数；不代表布局布线后的芯片面积、功耗或最高运行频率。另有 Dense 归约结构的技术无关综合对比，详见 [`RESULTS.md`](RESULTS.md)。
+面积为 Liberty 映射后的标准单元面积，STA 使用理想时钟、无布线寄生参数；不包含布线寄生参数和功耗分析。另有 Dense 归约结构的技术无关综合对比，详见 [`RESULTS.md`](RESULTS.md)。

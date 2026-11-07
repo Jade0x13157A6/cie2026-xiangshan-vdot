@@ -9,14 +9,14 @@ cd ~/work/xiangshan-vdot/xs-env
 nix develop
 ```
 
-### 已记录的工具版本
+### 开发工具版本
 
 | 组件 | 版本 | 环境说明 |
 |---|---|---|
 | 主机操作系统 | Ubuntu 26.04.1 LTS | 主机 |
 | Nix | 2.35.1 | 主机 |
 | 主机 GCC | 15.2.0 | 主机 |
-| 主机 Verilator | 5.051 development（`v5.050-102-ga6f4dd031`，已修改） | 主机；并非 devshell 中的版本 |
+| 主机 Verilator | 5.051 development（`v5.050-102-ga6f4dd031`） | 主机环境 |
 | Nix devshell Verilator | 5.048（2026-04-26） | devshell |
 | Nix devshell GCC | 15.2.0 | devshell |
 | Nix devshell RISC-V Linux GCC | 15.2.0 | devshell |
@@ -24,10 +24,10 @@ nix develop
 | Nix devshell Mill | 0.12.17 | devshell |
 | Nix devshell Clang | 21.1.8 | devshell |
 | `riscv64-unknown-elf-gcc` | 16.1.0（`g6afcc4f6d`） | 检查时主机和 devshell 均可使用 |
-| `xs-env` 提交版本 | `8ef5238` | 检查时本地工作树的 HEAD |
-| `XiangShan` 提交版本 | `0255614d4` | 检查时本地工作树的 HEAD；包含项目开发历史 |
+| `xs-env` 提交版本 | `8ef5238` | 本地工作区提交版本 |
+| `XiangShan` 提交版本 | `0255614d4` | 本地工作区提交版本 |
 
-上述 Git 提交版本记录的是**当时使用的工作环境**，不一定等同于最初的干净上游版本。参赛仓库另在 `versions.env` 中固定了上游基线提交版本。
+各仓库的补丁应用基线见 [`patches/s24/`](../patches/s24/)。
 
 ## 2. Hello XiangShan 环境测试
 
@@ -37,15 +37,15 @@ nix develop
 xs-env/nexus-am/apps/hello-jade/hello.c
 ```
 
-该源码包含按要求编写的 `printf` 输出：
+Hello 程序输出：
 
 ```text
 hello xiangshan, I am Ruijue Luo, IP address: 10.172.202.240
 ```
 
-这里的 IP 地址是测试程序中的**固定字符串**，不能据此认为程序自动检测了当前 IP 地址。
+IP 地址作为测试标识写入程序。
 
-检查到的已有构建产物：
+构建输出：
 
 ```text
 xs-env/nexus-am/apps/hello-jade/build/hello-jade-riscv64-xs.bin
@@ -118,7 +118,7 @@ TOP/SimTop/l_soc/core_with_l2/core/backend/inner_vfExuBlock/exus_2/VialuFix
 | `io_out_bits_res_data` | 低 64 位为 `0x0909090909090909` |
 | `io_out_bits_ctrl_vecWen` | 与结果一起有效 |
 
-上述时间戳之差仅是**仿真波形记录中的时间间隔**，不能单独作为物理门延迟或可靠的指令延迟测量。波形用于展示向量 ALU 内有效输入和结果的顺序关系；端到端功能正确性另由向量存储/回读测试及 Difftest 通过结果佐证。
+波形时间戳用于定位仿真信号，并非物理门延迟。功能正确性由向量存储回读与 Difftest 结果验证。
 
 ### 测试记录
 
@@ -127,4 +127,3 @@ TOP/SimTop/l_soc/core_with_l2/core/backend/inner_vfExuBlock/exus_2/VialuFix
 - `results/vadd-wave-verification.log`：VADD 功能验证日志。
 
 ![VADD 输入与输出波形](../results/waveforms/vadd_execution.png)
-

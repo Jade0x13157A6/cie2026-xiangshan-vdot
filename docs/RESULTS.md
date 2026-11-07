@@ -1,41 +1,18 @@
 # Dense VDOT 结构探索与微基准实验结果
 
-本文件记录 Dense VDOT 的结构比较与点积微基准。稀疏指令及标准单元评估见 [`S24.md`](S24.md)、[`S24_PPA.md`](S24_PPA.md)。
-
+Dense VDOT 的结构比较与点积微基准结果如下。稀疏指令及标准单元评估见 [`S24.md`](S24.md)、[`S24_PPA.md`](S24_PPA.md)。
 
 ## 1. 测试平台
 
 测试平台为香山（XiangShan）昆明湖 V2（`KunminghuV2Config`），使用 Verilator 5.048、修改后的 NEMU 参考模型及 RV64GCV 应用测试程序。RTL 与 NEMU 通过差分测试（Difftest）协同运行。
 
-## 2. 向量加法波形验证
-
-专用 `vadd.vv v3, v1, v2` 测试程序在 PC `0x80000168` 处执行指令编码 `0x021101d7`。测试验证了 8 个有效 INT8 元素，输出 `vadd.vv PASS: 8 lanes`；RTL–NEMU 仿真以 `HIT GOOD TRAP` 结束。
-
-波形使用 `--dump-wave-full` 采集，保存为 `results/waveforms/vadd-full.fst`。普通 `--dump-wave` 模式仅采样一个时钟相位，不适合此次时钟边沿分析。
-
-![VADD 执行单元波形](../results/waveforms/vadd_execution.png)
-
-在 `backend/inner_vfExuBlock/exus_2/VialuFix` 中观察到：
-
-| 信号 | 观测结果 |
-|---|---|
-| `io_in_valid` | 在波形时间戳约 8970 ps 时有效 |
-| `io_in_bits_ctrl_fuOpType` | `0x040` |
-| `io_in_bits_ctrl_vpu_vsew` | `0x00`（SEW=8） |
-| `io_in_bits_data_src_0`、`src_1` | 分别包含两个由 8 个元素组成的输入序列 |
-| `io_out_valid` | 在波形时间戳约 8972 ps 时有效 |
-| `io_out_bits_res_data` | 低 64 位为 `0x0909090909090909` |
-| `io_out_bits_ctrl_vecWen` | 随结果有效（写使能随结果传递） |
-
-输出对应 `[1,2,3,4,5,6,7,8]` 与 `[8,7,6,5,4,3,2,1]` 的逐元素加法。上述时间戳仅表示**仿真波形采样时间**，不是物理门延迟，也不能单独证明指令在架构层面的提交时序。该波形直接展示的是功能单元计算结果。
-
-## 3. Dense VDOT 功能验证
+## 2. Dense VDOT 功能验证
 
 Dense 指令 `vdot.vv` 对 8 组有符号 INT8 数据执行乘法，并通过 Hybrid CSA 归约网络得到有符号 32-bit 点积结果。
 
 RTL–NEMU Difftest 共 **76/76** 组通过，包括：4 组定向测试（正值、负值、最大值、最小值）、8 组数据通道映射测试，以及 64 组固定随机种子 `0x013157a6` 的随机测试。原始验证日志见 `results/validation-difftest.log`。
 
-## 4. Dense VDOT 与标准 RVV 的点积微基准
+## 3. Dense VDOT 与标准 RVV 的点积微基准
 
 标准 RVV 基线使用 `vle8.v`、`vwmul.vv`、`vwredsum.vs` 和 `vmv.x.s`。自定义 VDOT 路径包含两次向量加载、`vdot.vv`，并在 `SEW=32` 配置下使用 `vmv.x.s` 提取其 **32-bit** 结果。两种路径计时均包含向量配置、加载和结果提取。
 
@@ -58,14 +35,13 @@ Benchmark 配置为每轮计时执行 1,000 次点积，共运行 5 轮；测量
 
 **标准 RVV 与自定义 VDOT 的点积内核加速比为 13,349 / 9,015 = 1.480×**，相当于所测周期数减少约 32.5%。这是**点积内核微基准测试**结果，不代表单条指令延迟，也不是完整 LLM 推理的 tokens/s 指标。原始日志见 `results/benchmark-rvv-difftest.log`。
 
-## 5. 本组 Dense 微基准的测量限制
+## 4. 测量条件
 
 - 当前指令固定为 `SEW=8`、`LMUL=1`、`VL=8` 的无掩码点积。
 - 未进行完整 LLM 推理吞吐量测试，因此不作端到端 LLM 加速声明。
-- 本组 Dense 结构对比使用技术无关 Yosys Generic Cells，不能当成 ASIC 物理面积。参赛硬件另有 Nangate45 标准单元映射与 STA 结果，见 [`S24_PPA.md`](S24_PPA.md)。
-- 仿真波形与功能测试通过，不能代替全面的微架构时序签核。
+- Dense 结构比较采用 Yosys 技术无关逻辑单元数；Nangate45 标准单元映射与 STA 见 [`S24_PPA.md`](S24_PPA.md)。
 
-## 6. Dense 归约结构：Hybrid CSA 实验
+## 5. Dense 归约结构综合比较
 
 从香山 `VIAluFix` 的 Chisel 实现生成五种归约结构，并在同一技术无关 Yosys 流程下进行综合（`read_slang`、`synth -flatten`、`stat`、`ltp -noff`）。Generic Cells 统计对象是**整个 `VIAluFix` 模块**，既不是 VDOT 独立电路面积，也不是 ASIC 物理面积。VDOT 逻辑深度是**拓扑门级数**，不等于实际传播延迟。
 

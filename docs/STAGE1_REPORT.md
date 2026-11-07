@@ -9,27 +9,18 @@
 Hello XiangShan 程序在处理器仿真器中输出：
 
 ```text
-hello xiangshan, I am Ruijue Luo, IP address: 10.172.202.240
 The first instruction of core 0 has commited. Difftest enabled.
+hello xiangshan, I am Ruijue Luo, IP address: 10.172.202.240
 Core 0: HIT GOOD TRAP
 ```
 
-日志中的 IP 地址为程序内置的测试字符串，并非运行时动态探测。日志表明程序能够运行到正常结束，并启用了 RTL–NEMU 差分测试。原始输出：[hello-xiangshan.log](../results/stage1/hello-xiangshan.log)。程序源文件归档在 `source/nexus-am/apps/hello-jade/`。
+IP 地址是 Hello 程序中的测试标识。仿真启用了 RTL–NEMU Difftest，并正常结束。运行日志：[hello-xiangshan.log](../results/stage1/hello-xiangshan.log)。程序源文件归档在 `source/nexus-am/apps/hello-jade/`。
 
 ## 1.2 开发环境与操作记录
 
-可核对的操作顺序如下。以下列出开发环境配置与验证步骤。
+开发环境通过 `xs-env` 和 Nix 统一管理，构建 XiangShan Verilator 仿真器、NEMU 参考模型及 `nexus-am` 测试程序。测试程序在 RTL–NEMU Difftest 模式下运行；VADD 同时采集执行单元全波形，用于分析操作数、控制信号和计算结果。
 
-| 步骤 | 操作 | 对应材料 |
-|---|---|---|
-| 1 | 获取 `xs-env`、初始化子模块、确认 XiangShan/NEMU/nexus-am 修订版本 | 根目录 `README.md`、`patches/s24/*-base.txt` |
-| 2 | 进入 `xs-env` 的 Nix 开发环境并检查工具版本 | [环境记录](../results/environment.txt) |
-| 3 | 构建 XiangShan Verilator 仿真器及 NEMU 动态库 | `scripts/build.sh`（Dense 测试构建脚本），根目录 README 的构建说明 |
-| 4 | 构建和运行 Hello XiangShan | [Hello 原始日志](../results/stage1/hello-xiangshan.log) |
-| 5 | 构建和运行 VADD，开启差分测试和全波形记录 | [VADD 日志](../results/vadd-wave-full.log) |
-| 6 | 读取生成的执行单元波形并验证向量结果 | [VADD 波形截图](../results/waveforms/vadd_execution.png) |
-
-开发环境配置及所用工具版本保存在 `results/environment.txt`；工程复现命令见根目录 README。
+开发环境配置见 [工具与系统记录](../results/environment.txt)，测试过程分别记录在 [Hello XiangShan](../results/stage1/hello-xiangshan.log) 和 [VADD](../results/vadd-wave-full.log) 日志中。编译及运行命令见根目录 [README](../README.md#复现方法)。
 
 ## 1.3 VADD.VV 指令在香山中的执行过程
 
@@ -42,7 +33,7 @@ vsetivli / vle8.v    →   vadd.vv 译码   →   向量整数执行单元 VIAlu
 内存中的 8 个结果  ←   vse8.v 写回      ←   执行结果与 vecWen 输出
 ```
 
-执行单元波形路径：`TOP/SimTop/l_soc/core_with_l2/core/backend/inner_vfExuBlock/exus_2/VialuFix`。在已保存的波形中：
+波形中的执行单元路径：`TOP/SimTop/l_soc/core_with_l2/core/backend/inner_vfExuBlock/exus_2/VialuFix`。在已保存的波形中：
 
 | 观察信号 | 观察值或行为 |
 |---|---|

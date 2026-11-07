@@ -1,13 +1,12 @@
 # 2026 CIE 全国 RISC-V 高水平创新及应用大赛——XiangShan VDOT 指令扩展
 
-## 三阶段提交材料
-
-按照大赛评审规则，阶段报告分别为 [环境与 VADD](docs/STAGE1_REPORT.md)、[指令设计与基础测试](docs/STAGE2_REPORT.md)、[NEMU、Baseline 与加速分析](docs/STAGE3_REPORT.md)。
-
-
 ## 项目简介
 
 本项目基于 XiangShan 昆明湖 V2，在向量整数执行单元 `VIAluFix` 中实现 **INT8 Dense VDOT 与 2:4 结构化稀疏 VDOT**。两种指令共享 8 个有符号 INT8 乘法器；稀疏运算采用 FastSel 选择逻辑与 CSA 归约网络。项目覆盖指令译码、RTL、NEMU 参考模型、差分测试、应用性能与标准单元综合。
+
+## 技术报告
+
+[环境与 VADD 验证](docs/STAGE1_REPORT.md) · [VDOT 设计与功能测试](docs/STAGE2_REPORT.md) · [NEMU 协同仿真及性能分析](docs/STAGE3_REPORT.md)
 
 ## 指令与硬件实现
 
@@ -22,7 +21,9 @@
 
 ## 测试与性能
 
-XiangShan + NEMU Difftest 验证了指令执行；Dense 回归测试为 **76/76 PASS**。应用采用 2:4 稀疏权重的 **64→32→10 INT8 MLP**，测试 32 个样本：预测结果与 Python INT8 参考模型 **32/32 一致**，分类结果 **31/32 正确**，仿真以 `HIT GOOD TRAP` 结束。
+XiangShan + NEMU Difftest 验证了指令执行：Dense 回归 **76/76 PASS**，全零边界测试 **2/2 PASS**。应用采用 2:4 稀疏权重的 **64→32→10 INT8 MLP**，测试 32 个样本：预测结果与 Python INT8 参考模型 **32/32 一致**，分类结果 **31/32 正确**，仿真以 `HIT GOOD TRAP` 结束。
+
+标准 RVV 点积内核为 **13.349 cycles/dot**，自定义 Dense VDOT 为 **9.015 cycles/dot**，测得 **1.480×** 加速（五轮取最小周期数）。详见 [性能分析](docs/STAGE3_REPORT.md)。
 
 | 应用实现 | 32 个样本的周期数（5 轮测量中位数） |
 |---|---:|
@@ -41,11 +42,11 @@ PairAcc 相比 Specialized 减少约 **0.41%** 周期。两者在同一次测试
 | FastSel 优化前 | 38,789 | 49,517.496 | 2.99 |
 | **FastSel** | **38,724** | **49,354.172** | **2.71** |
 
-稀疏功能相对未启用时的 `VIAluFix` **增加 1.579% 映射面积**；FastSel 相对优化前**减少 0.330% 面积**。STA 使用 10 ns 理想时钟约束；FastSel 的全模块最差 Slack 未优于优化前。以上为布局布线前的模块级估计，不代表整颗处理器的物理 PPA。详见 [`docs/S24_PPA.md`](docs/S24_PPA.md)。
+稀疏功能相对未启用时的 `VIAluFix` **增加 1.579% 映射面积**；FastSel 相对优化前**减少 0.330% 面积**。STA 使用 10 ns 理想时钟约束；FastSel 的全模块最差 Slack 未优于优化前。上述面积与时序结果为布局布线前的 `VIAluFix` 模块评估。详见 [`docs/S24_PPA.md`](docs/S24_PPA.md)。
 
 ## 复现方法
 
-本项目使用 `xs-env`（包含 XiangShan、NEMU 和 nexus-am）及本仓库的补丁和应用源码。构建时使用 Nix 开发环境。下列命令在**已具备对应基础 Git 提交的工作区**中执行；若为全新工作区，请先阅读本节最后的“基础版本说明”。
+本项目使用 `xs-env`（包含 XiangShan、NEMU 和 nexus-am）及本仓库的补丁和应用源码。构建时使用 Nix 开发环境。下列命令在**已具备对应基础 Git 提交的工作区**中执行；基础提交版本见本节末尾。
 
 ### 1. 准备工作区
 
@@ -94,9 +95,9 @@ nix develop -c bash ../cie2026-jade-vdot/software/VDOT_Real_INT8_PAIRACC/run.sh
 - `run.log` 应包含 `S24-PAIRACC ALL PASS` 与 `HIT GOOD TRAP`；
 - `summary.txt` 给出 Specialized 与 PairAcc 的周期数。
 
-### 基础版本说明
+### 源码基线
 
-**从零克隆到运行的完整流程尚未在独立环境验证。** 当前 S24 补丁依赖的部分基础提交（见 `patches/s24/*-base.txt`）在已检查的公开 OpenXiangShan 仓库中无法解析；仅克隆公开 `xs-env` 并执行 `git checkout`，可能无法取得这些提交。需要先发布可公开获取的完整基础代码历史或将补丁整理成基于公开提交的完整补丁集，才能宣称第三方可从零复现。
+补丁对应的源码提交记录在 [`patches/s24/*-base.txt`](patches/s24/) 中。构建前需确保 `xs-env` 及其子仓库处于这些提交；本仓库保存对应的修改补丁，不包含完整的上游处理器源码。
 
 ## 目录说明
 

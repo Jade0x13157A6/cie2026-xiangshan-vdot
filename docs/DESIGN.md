@@ -2,7 +2,7 @@
 
 ## 1. 设计目标
 
-本文件介绍 Dense VDOT 的运算定义及 Hybrid CSA 归约实验。稀疏运算见 [`S24.md`](S24.md)。
+Dense VDOT 的运算定义与 Hybrid CSA 归约结构如下。稀疏运算见 [`S24.md`](S24.md)。
 
 ## 2. 指令语义
 
@@ -96,7 +96,7 @@ VIAluFix
     32-bit signed result
 ```
 
-19 位中间结果足以覆盖 8 组 signed INT8 乘积的全部可能和。`VIAluFix` 的原有流水线接口、VDOT 译码和 NEMU 参考模型均保持不变。该选择来自对 Balanced Tree、CSA、MAC、Hybrid 和 Fused Booth + CSA 五种实现的同条件 Yosys 综合对比。测量见 `docs/RESULTS.md` 第 6 节。
+19 位中间结果足以覆盖 8 组 signed INT8 乘积的全部可能和。`VIAluFix` 的原有流水线接口、VDOT 译码和 NEMU 参考模型均保持不变。该选择来自对 Balanced Tree、CSA、MAC、Hybrid 和 Fused Booth + CSA 五种实现的同条件 Yosys 综合对比。对比结果见 [`RESULTS.md`](RESULTS.md)。
 
 ## 6. 流水线与写回
 
@@ -130,10 +130,10 @@ NEMU 使用独立的顺序 C 模型：
 4. 清零目标向量高 96 位。
 5. 与 XiangShan RTL 逐条退休指令比较。
 
-## 8. 本组 Dense 实验的适用范围
+## 8. 接口与配置约束
 
 - 固定计算 8 个 INT8 元素。
 - 不支持 mask。
 - 尚未添加汇编器 mnemonic，因此测试使用 `.word`。
-- 本组 Dense 归约实验没有标准单元面积与时序对比；参赛方案的 Nangate45 映射和 STA 结果请参阅 [`S24_PPA.md`](S24_PPA.md)。
+- 标准单元面积与时序分析见 [`S24_PPA.md`](S24_PPA.md)。
 - 尚未加入编译器 intrinsic。

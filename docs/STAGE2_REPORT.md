@@ -51,8 +51,8 @@ FastSel 使用掩码位直接生成激活值选择信号，避免先计算二进
 
 另有 8 组 Lane 映射测试和 64 组固定随机种子（`0x013157a6`）测试，**合计 76/76 PASS**，Difftest 启用并以 `HIT GOOD TRAP` 结束。测试源码：[vdot.c](../source/nexus-am/apps/vdot-jade/vdot.c)。
 
-针对全零边界值，独立程序 [`software/vdot-zero/`](../software/vdot-zero/) 分别测试全零左操作数和全零右操作数。**两组均通过（2/2 PASS）**；XiangShan–NEMU Difftest 已启用，仿真以 `HIT GOOD TRAP` 结束。运行日志：[zero-difftest.log](../results/stage2/zero-difftest.log)。这两组是单独补充的测试，不计入上述 76 组回归测试。
+针对全零输入，独立程序 [`software/vdot-zero/`](../software/vdot-zero/) 分别测试全零左操作数和全零右操作数。**两组均通过（2/2 PASS）**；XiangShan–NEMU Difftest 已启用，仿真以 `HIT GOOD TRAP` 结束。运行日志：[zero-difftest.log](../results/stage2/zero-difftest.log)。全零测试独立于上述 76 组回归测试。
 
-### 扩展验证
+### 其他测试
 
 Dense 归约结构的独立 RTL 回归完成 **100,005** 组测试；2:4 稀疏运算在 INT8 MLP 应用中取得 **32/32** 参考预测一致结果。详见 [结构比较](RESULTS.md) 与 [应用性能](STAGE3_REPORT.md)。

@@ -4,4 +4,4 @@
 
 同轮测试采用 3 次预热、5 轮测量；Specialized 为 **19,387 cycles**，PairAcc 为 **19,308 cycles**。输出与 Python INT8 参考模型 32/32 一致。
 
-构建与运行步骤统一见[根目录 README 的「复现方法」](../../README.md#复现方法)。
+构建及测试命令见[根目录 README 的「复现方法」](../../README.md#复现方法)。
