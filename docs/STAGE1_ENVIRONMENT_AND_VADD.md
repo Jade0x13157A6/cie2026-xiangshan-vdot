@@ -128,11 +128,3 @@ TOP/SimTop/l_soc/core_with_l2/core/backend/inner_vfExuBlock/exus_2/VialuFix
 
 ![VADD 输入与输出波形](../results/waveforms/vadd_execution.png)
 
-## 4. 第一阶段证据核查清单
-
-- [x] 分别记录 devshell 和主机的工具版本。
-- [x] 确认 Hello XiangShan 测试源码与已构建二进制文件。
-- [x] 已核查 Hello XiangShan 日志中的问候语、Difftest 和 `HIT GOOD TRAP`。
-- [x] 运行并验证 8-lane VADD 功能测试与 RTL–NEMU Difftest。
-- [x] 捕获并保存 VADD 执行单元波形截图。
-- [ ] 如比赛提交系统要求，附上开发环境和操作过程的配音录屏。
