@@ -14,9 +14,11 @@
 - `inputs/VdotCsaMain.scala`：独立执行单元的 Mill/Chisel 生成入口。
 - `inputs/tb_vialufix_csa.sv`：Verilator 独立 RTL Testbench。
 - `inputs/VIAluFix_*.scala`：其他存在的候选结构源码，当前归档：`mac`、`hybrid`、`fused`。
-- `logs/fused-test.log`：实际 Verilator 测试输出（检查含 `PASS: 100005 actual VIAluFix RTL tests`）。
+- `logs/fused-test.log.gz`：实际 Verilator 测试输出（检查含 `PASS: 100005 actual VIAluFix RTL tests`）。
 - `reports/`：存在于本地分析目录的各结构 Yosys 原始统计和路径分析日志。
 - `SHA256SUMS`：本目录所有归档原始文件的 SHA-256。
+
+归档测试日志已无损压缩以减少仓库体积，需要查看原始文本可运行：`gzip -dc logs/fused-test.log.gz | less`。
 
 ## 综合比较
 

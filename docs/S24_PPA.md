@@ -49,16 +49,32 @@ not a separately generated full XiangShan processor.
 
 ## 4. STA evidence and limitations
 
-Nangate45 STA logs have been retained for three **VIAluFix** configurations:
+The following **mapped, pre-layout VIAluFix** static-timing numbers are
+extracted from the original Nangate45 logs. They use a **10 ns ideal clock**
+constraint; they are not post-route clock-frequency measurements.
+
+| Mapped configuration | Worst reported setup slack (ns) |
+|---|---:|
+| Sparse disabled | 1.62 |
+| Pre-FastSel | 2.99 |
+| FastSel | 2.71 |
+
+All three reported worst setup slacks are positive under this constraint.
+Although FastSel reduces **mapped area** and the **standalone generic logic
+levels**, its whole-module worst setup slack is **0.28 ns smaller**
+than Pre-FastSel in this STA run. Therefore, FastSel must **not** be claimed
+to improve the global mapped timing of VIAluFix. The metric is unplaced,
+with ideal clocks, and includes paths unrelated to Sparse VDOT.
+
+Original whole-module STA evidence:
 
 - [`sparse-off.sta.log`](../results/vdot-s24/chisel-fastsel-ppa/nangate45/sparse-off.sta.log)
 - [`pre-fastsel.sta.log`](../results/vdot-s24/chisel-fastsel-ppa/nangate45/pre-fastsel.sta.log)
 - [`fastsel.sta.log`](../results/vdot-s24/chisel-fastsel-ppa/nangate45/fastsel.sta.log)
 
-These files show that a static-timing flow was executed. This report does **not**
-assert any particular delay/slack/Fmax number without checking each STA log's
-clock constraints, reporting endpoints and timing units. No placement, routing,
-post-route timing, switching-activity-based power, or ASIC sign-off is claimed.
+VDOT-specific tagged paths are also retained alongside the full reports.
+No placement, routing, post-route setup timing, switching-activity-based
+power, or ASIC sign-off is claimed.
 
 ## 5. Correctness and throughput are independent evidence
 

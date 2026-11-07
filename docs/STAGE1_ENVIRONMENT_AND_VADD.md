@@ -62,7 +62,7 @@ xs-env/XiangShan/build/emu \
   2>&1 | tee cie2026-jade-vdot/results/stage1/hello-xiangshan.log
 ```
 
-**需附加或核查的证据：** `results/stage1/hello-xiangshan.log` 应包含上述问候输出及 `Core 0: HIT GOOD TRAP`。此前开发会话报告过执行成功，但编写本报告时尚未独立核查该日志的完整内容。
+**已核查的证据：** `results/stage1/hello-xiangshan.log` 包含 Hello XiangShan 的问候输出、`Difftest enabled` 和 `HIT GOOD TRAP`；这是已保存日志的核查结果。
 
 ## 3. VADD.VV 波形验证
 
@@ -132,7 +132,7 @@ TOP/SimTop/l_soc/core_with_l2/core/backend/inner_vfExuBlock/exus_2/VialuFix
 
 - [x] 分别记录 devshell 和主机的工具版本。
 - [x] 确认 Hello XiangShan 测试源码与已构建二进制文件。
-- [ ] 核查保存的 Hello XiangShan 执行日志中是否同时包含要求的问候语及 `HIT GOOD TRAP`。
+- [x] 已核查 Hello XiangShan 日志中的问候语、Difftest 和 `HIT GOOD TRAP`。
 - [x] 运行并验证 8-lane VADD 功能测试与 RTL–NEMU Difftest。
 - [x] 捕获并保存 VADD 执行单元波形截图。
 - [ ] 如比赛提交系统要求，附上开发环境和操作过程的配音录屏。
