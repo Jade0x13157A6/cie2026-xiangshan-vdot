@@ -55,6 +55,28 @@ FastSel 使用掩码位直接生成激活值选择信号，避免先计算二进
 
 ![VDOT 功能测试与全零边界测试输出](../results/stage2/vdot_functional_tests.png)
 
+## 2.4 Sparse VDOT 功能验证
+
+在 XiangShan Verilator 仿真器中运行 2:4 Sparse VDOT INT8 MLP 测试，并启用 NEMU Difftest。测试网络结构为 **64→32→10**，共包含 **32 个测试样本**。
+
+| 验证项目 | 结果 |
+|---|---|
+| Specialized | VERIFY PASS |
+| Pairwise-layer0 | VERIFY PASS |
+| 测试样本 | 32 |
+| 分类正确数 | 31/32 |
+| Python INT8 参考模型 | MATCH |
+| Layer 0 点积结果 | MATCH |
+| 整体验证 | **S24-PAIRACC ALL PASS** |
+| NEMU Difftest | Enabled |
+| 仿真结束 | **HIT GOOD TRAP** |
+
+两种计算模式均通过验证。`31/32` 表示分类正确数，不代表硬件计算错误。终端确认参考模型预测及 Layer 0 点积结果一致。
+
+![Sparse VDOT 功能验证终端输出](../results/stage2/sparse_vdot_terminal.png)
+
+上述截图展示了两种模式的 `VERIFY PASS`、整体 `ALL PASS` 及 `HIT GOOD TRAP`。性能测量结果另见 [第三阶段报告](STAGE3_REPORT.md)。
+
 ### 其他测试
 
 Dense 归约结构的独立 RTL 回归完成 **100,005** 组测试；2:4 稀疏运算在 INT8 MLP 应用中取得 **32/32** 参考预测一致结果。详见 [结构比较](RESULTS.md) 与 [应用性能](STAGE3_REPORT.md)。
