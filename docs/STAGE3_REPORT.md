@@ -43,11 +43,11 @@ Baseline 与自定义指令的四种输入均得到一致结果：`120`、`−12
 
 | 实现 | 1,000 次点积总周期 | 每次点积周期 |
 |---|---:|---:|
-| Scalar C | 24,846 | 24.846 |
+| Scalar C | 24,796 | 24.796 |
 | 标准 RVV Baseline | 13,349 | 13.349 |
 | **自定义 VDOT** | **9,015** | **9.015** |
 
-**RVV → VDOT 加速比 = 13,349 / 9,015 = 1.480×**，周期降低约 **32.5%**。Scalar → VDOT 为 **2.756×**。
+**RVV → VDOT 加速比 = 13,349 / 9,015 = 1.480×**，周期降低约 **32.5%**。Scalar → VDOT 为 **2.750×**。
 
 原始测试日志：[benchmark-rvv-difftest.log](../results/benchmark-rvv-difftest.log)、[Hybrid 复测](../results/hybrid/benchmark-rvv-difftest.log)；分析细节见 [Dense 微基准报告](RESULTS.md)。
 
@@ -79,3 +79,47 @@ PairAcc 的周期降低约 **0.41%**，反映的是应用层累加策略优化�
 ## 3.6 可扩展性与实现边界
 
 计算结构中的乘积生成、CSA 归约及元数据选择可进一步参数化；现有硬件支持固定的 8-lane INT8 Dense VDOT，以及规定的 2:4 稀疏格式；没有实现通用 SEW/VLEN/LMUL 或自动掩码执行。增加向量宽度需扩展乘法器数量或引入多周期累加；支持更宽 SEW 需调整乘积位宽、归约树和溢出处理；支持通用 VL/vstart 需要额外控制逻辑。
+
+## 3.7 RTL 波形验证：算术数据通路与稠密/稀疏模式切换
+
+### 3.7.1 八路有符号乘法与归约树
+
+VDOT 算术数据通路使用八路有符号 INT8 乘法，产生 `vdotProducts_0` 至 `vdotProducts_7`，随后通过 `vdotSumLevel1`、`vdotSumLevel2` 和 `vdotSum` 逐层求和。波形中的示例输出包括正数点积 **120** 和负数点积 **−36**，对应的输出结果与归约结果一致。
+
+![VDOT 八路乘法与归约树波形](../results/stage3/vdot_arithmetic_datapath.png)
+
+*图 3-1：VDOT 八路乘法、分层归约与正负数结果。*
+
+### 3.7.2 稠密/稀疏模式切换及有符号计算
+
+对独立 Dense/Sparse VDOT RTL 模块进行 Verilator 功能仿真，测试平台将 `result` 与参考结果 `expected` 比较，并检查 `invalid_sparse` 与 `expected_invalid` 是否一致。全部 **6,010 组测试向量通过**：
+
+```text
+PASS: RTL 6010 vectors
+SIM_EXIT_CODE=0
+```
+
+为清楚展示模式切换，从已通过的测试向量中选取相邻的七组用于波形观察。`mode=0` 为稠密模式，`mode=1` 为 2:4 稀疏模式。约 **3 ns** 时由稠密切换到稀疏模式，计算结果如下：
+
+| 时间区间 | 模式 | 计算结果（十六进制） | 结果含义 |
+|---|---|---|---|
+| 2–3 ns | 稠密（0） | `0x00001D91` | 单个正数点积 |
+| 3–4 ns | 稀疏（1） | `0xFFFFE2ABFFFFFB64` | 两个负数部分和 |
+| 4–5 ns | 稀疏（1） | `0x000018560000159F` | 两个正数部分和 |
+| 5–6 ns | 稀疏（1） | `0x00003280FFFFF99D` | 一正一负两个部分和 |
+
+上述样例中，`result` 与 `expected` 一致，稀疏掩码的非法标志与预期一致。
+
+![稠密/稀疏模式切换与有符号计算](../results/stage3/dense_sparse_mode_switch.png)
+
+*图 3-2：稠密/稀疏模式切换、两个有符号结果及参考结果比对。*
+
+独立 RTL 仿真用于验证 Dense/Sparse 算术功能，处理器级正确性通过 XiangShan 与 NEMU 的差分测试进行验证。
+
+### 3.7.3 性能测试结果
+
+性能基准测试统计每次点积运算的平均执行周期，包含计算之外的必要程序开销。自定义 VDOT 相比标量实现获得 **2.750×** 加速，相比标准 RVV 实现获得 **1.480×** 加速。
+
+![RVV 与 VDOT 性能测试输出](../results/stage3/rvv_vdot_benchmark.png)
+
+*图 3-3：标量、标准 RVV 和自定义 VDOT 的周期数及加速比。*
