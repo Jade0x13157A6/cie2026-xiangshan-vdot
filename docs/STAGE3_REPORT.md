@@ -49,6 +49,8 @@ Baseline 与自定义指令的四种输入均得到一致结果：`120`、`−12
 
 ![RVV Baseline 与自定义 VDOT 的性能基准输出](../results/stage3/rvv_vdot_benchmark.png)
 
+*图 3-2：标量、标准向量实现与 VDOT 的性能对比。*
+
 ## 3.4 稀疏计算的应用验证
 
 工程在 Dense VDOT 之外实现了共享乘法器的 2:4 稀疏 VDOT，并用于 **64→32→10 的 INT8 MLP**，共测试 32 个样本。32/32 结果与 Python INT8 参考预测一致，31/32 分类正确，Difftest 正常结束。比较同一轮应用的两种累加方法：
@@ -59,6 +61,10 @@ Baseline 与自定义指令的四种输入均得到一致结果：`120`、`−12
 | PairAcc | **19,308** |
 
 PairAcc 的周期降低约 **0.41%**，反映的是应用层累加策略优化。软件及日志：[PairAcc 应用](../software/VDOT_Real_INT8_PAIRACC/)与[运行摘要](../results/vdot-s24/real-int8-pairacc/summary.txt)。
+
+![稀疏 MLP 验证与累加策略性能日志](../results/stage3/sparse_mlp_validation.png)
+
+*图 3-3：稀疏 MLP 正确性验证与两种累加策略周期对比。*
 
 ## 3.5 微架构优化、标准单元面积与时序
 
@@ -72,6 +78,10 @@ PairAcc 的周期降低约 **0.41%**，反映的是应用层累加策略优化�
 
 稀疏功能在该模块上的面积增量为 **767.144 μm²（1.579%）**；FastSel 相比优化前节省 **163.324 μm²（0.330%）**。FastSel 缩短了独立通路的拓扑逻辑级数，但在此映射 STA 中并**未**改善整个模块最差 Setup Slack。以上为布局布线前的标准单元映射结果。完整记录见 [面积与时序报告](S24_PPA.md)。
 
+![Nangate45 标准单元映射面积日志](../results/stage3/nangate45_ppa_results.png)
+
+*图 3-4：Nangate45 标准单元面积映射结果；时序数据见上表及原始 STA 报告。*
+
 ## 3.6 可扩展性与实现边界
 
 计算结构中的乘积生成、CSA 归约及元数据选择可进一步参数化；现有硬件支持固定的 8-lane INT8 Dense VDOT，以及规定的 2:4 稀疏格式；没有实现通用 SEW/VLEN/LMUL 或自动掩码执行。增加向量宽度需扩展乘法器数量或引入多周期累加；支持更宽 SEW 需调整乘积位宽、归约树和溢出处理；支持通用 VL/vstart 需要额外控制逻辑。
@@ -84,7 +94,7 @@ VDOT 算术数据通路使用八路有符号 INT8 乘法，产生 `vdotProducts_
 
 ![VDOT 八路乘法与归约树波形](../results/stage3/vdot_arithmetic_datapath.png)
 
-*图 3-2：VDOT 八路乘法、分层归约与正负数结果。*
+*图 3-5：VDOT 八路乘法、分层归约与正负数结果。*
 
 ### 3.7.2 稠密/稀疏模式切换及有符号计算
 
@@ -108,6 +118,6 @@ SIM_EXIT_CODE=0
 
 ![稠密/稀疏模式切换与有符号计算](../results/stage3/dense_sparse_mode_switch.png)
 
-*图 3-3：稠密/稀疏模式切换、两个有符号结果及参考结果比对。*
+*图 3-6：稠密/稀疏模式切换、两个有符号结果及参考结果比对。*
 
 独立 RTL 仿真用于验证 Dense/Sparse 算术功能，处理器级正确性通过 XiangShan 与 NEMU 的差分测试进行验证。
