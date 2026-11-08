@@ -113,3 +113,9 @@ nix develop -c bash ../cie2026-jade-vdot/software/VDOT_Real_INT8_PAIRACC/run.sh
 Dense 归约结构的 Balanced Tree、Hybrid CSA、Fused Booth 等对比实验保留在 [`docs/DESIGN.md`](docs/DESIGN.md)、[`docs/RESULTS.md`](docs/RESULTS.md) 和 [`experiments/`](experiments/fused_booth/)。`source/` 与 Dense 实验脚本仅供结构对比参考。
 
 参考项目：[XiangShan](https://github.com/OpenXiangShan/XiangShan) · [xs-env](https://github.com/OpenXiangShan/xs-env) · [NEMU](https://github.com/OpenXiangShan/NEMU)
+
+## 项目演示视频
+
+- [第一阶段：环境部署与验证](submission/videos/STAGE1_VIDEO.mp4)
+- [第二阶段：VDOT 设计与实现](submission/videos/STAGE2_VIDEO.mp4)
+- [第三阶段：协同仿真与性能评估](submission/videos/STAGE3_VIDEO.mp4)
