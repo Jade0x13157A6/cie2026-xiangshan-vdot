@@ -8,15 +8,11 @@
 
 硬件和 NEMU 采用独立实现：Chisel RTL 走共享乘法器与 CSA 数据通路，NEMU 使用顺序 C 算法。Difftest 比较两种独立实现的指令结果。
 
-仿真运行中记录：
+仿真运行结果如下：
 
-```text
-The first instruction of core 0 has commited. Difftest enabled.
-vdot.vv lane routing PASS: 8 cases
-vdot.vv deterministic random PASS: 64 cases
-vdot.vv test PASS: 76 total cases
-Core 0: HIT GOOD TRAP
-```
+![VDOT 指令 Difftest 验证结果](../results/stage3/vdot_difftest_pass.png)
+
+*图 3-1：VDOT 指令差分测试，76 组测试通过。*
 
 对应日志：[VDOT 指令 Difftest](../results/validation-difftest.log)、[Dense Hybrid 整机 Difftest](../results/hybrid/validation-difftest.log)；稀疏应用的测试记录位于 [`results/vdot-s24/real-int8-pairacc/`](../results/vdot-s24/real-int8-pairacc/)。
 
@@ -88,7 +84,7 @@ VDOT 算术数据通路使用八路有符号 INT8 乘法，产生 `vdotProducts_
 
 ![VDOT 八路乘法与归约树波形](../results/stage3/vdot_arithmetic_datapath.png)
 
-*图 3-1：VDOT 八路乘法、分层归约与正负数结果。*
+*图 3-2：VDOT 八路乘法、分层归约与正负数结果。*
 
 ### 3.7.2 稠密/稀疏模式切换及有符号计算
 
@@ -112,6 +108,6 @@ SIM_EXIT_CODE=0
 
 ![稠密/稀疏模式切换与有符号计算](../results/stage3/dense_sparse_mode_switch.png)
 
-*图 3-2：稠密/稀疏模式切换、两个有符号结果及参考结果比对。*
+*图 3-3：稠密/稀疏模式切换、两个有符号结果及参考结果比对。*
 
 独立 RTL 仿真用于验证 Dense/Sparse 算术功能，处理器级正确性通过 XiangShan 与 NEMU 的差分测试进行验证。
